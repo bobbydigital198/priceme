@@ -1,7 +1,7 @@
 // On-device text recognition with Tesseract.js. Nothing is sent anywhere: the engine and
 // French/English language data are bundled with the app (see scripts/copy-ocr-assets.mjs).
 import { createWorker, OEM, PSM, type Page, type Worker } from 'tesseract.js'
-import { adaptiveThreshold, grayToCanvas, makeThumbnail, stretchContrast, toGray } from './imageProcessing'
+import { adaptiveThreshold, grayToCanvas, makeThumbnail, stretchContrast, toGray, type GrayImage } from './imageProcessing'
 import { parsePriceTag, type Confidence, type OcrLine, type OcrWord, type ParseResult } from './priceParser'
 
 export type TagReading = {
@@ -73,6 +73,8 @@ export async function recoverSplitPrice(
   image: Parameters<Worker['recognize']>[0],
   size: { width: number; height: number },
   page: Page,
+  // Black-and-white version of the image, used to find the gap after the big digits.
+  binary?: GrayImage,
 ): Promise<OcrLine[] | null> {
   const words = allWords(page)
   if (!words.length) return null
@@ -87,7 +89,24 @@ export async function recoverSplitPrice(
   if (euros.length < 1 || euros.length > 2) return null
 
   const wordHeight = heightOf(word.bbox)
-  const left = euros[euros.length - 1].bbox.x1 + 1
+  // Tesseract sometimes stretches the last digit's box over the cents too, so find where the
+  // digit really ends: the first blank pixel column, or failing that 0.8 times its height.
+  const last = euros[euros.length - 1].bbox
+  const digitHeight = heightOf(last)
+  let right = Math.min(last.x1, last.x0 + digitHeight * 0.8)
+  if (binary) {
+    const blank = (x: number) => {
+      for (let y = last.y0; y < last.y1; y++) if (binary.pixels[y * binary.width + x] === 0) return false
+      return true
+    }
+    for (let x = Math.round(last.x0 + digitHeight * 0.3); x < Math.min(last.x1, binary.width); x++) {
+      if (blank(x)) {
+        right = x
+        break
+      }
+    }
+  }
+  const left = Math.round(right) + 1
   const rectangle = {
     left,
     top: word.bbox.y0,
@@ -122,7 +141,8 @@ export async function readPriceTag(tag: HTMLCanvasElement, progress?: (fraction:
   const worker = await getOcrWorker()
 
   const gray = stretchContrast(toGray(tag))
-  const binary = grayToCanvas(adaptiveThreshold(gray))
+  const binaryImage = adaptiveThreshold(gray)
+  const binary = grayToCanvas(binaryImage)
 
   async function attempt(image: HTMLCanvasElement, from: number, to: number) {
     onProgress = (fraction) => progress?.(from + fraction * (to - from))
@@ -141,7 +161,7 @@ export async function readPriceTag(tag: HTMLCanvasElement, progress?: (fraction:
     }
     if (unsure(best)) {
       onProgress = undefined
-      const lines = await recoverSplitPrice(worker, best.image, best.image, best.page)
+      const lines = await recoverSplitPrice(worker, best.image, best.image, best.page, binaryImage)
       const recovered = lines && parsePriceTag(lines)
       if (recovered && RANK[recovered.confidence] > RANK[best.parsed.confidence]) best = { ...best, parsed: recovered }
     }
