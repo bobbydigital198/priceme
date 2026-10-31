@@ -424,6 +424,160 @@ button {
   font-size: 0.85rem;
 }
 
+/* Price tag camera */
+
+.tag-frame {
+  width: 86vw;
+  max-width: 480px;
+  aspect-ratio: 3 / 2;
+  display: grid;
+  place-items: center;
+  border: 3px solid rgb(255 255 255 / 0.85);
+  border-radius: 16px;
+  box-shadow: 0 0 0 100vmax rgb(0 0 0 / 0.35);
+}
+
+.tag-guide {
+  width: 55%;
+  color: #ffffff;
+  opacity: 0.3;
+}
+
+.shutter {
+  width: 76px;
+  height: 76px;
+  border: 5px solid #ffffff;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.shutter:active {
+  transform: scale(0.94);
+}
+
+.shutter:disabled {
+  opacity: 0.4;
+}
+
+/* Reading results */
+
+.reading-prices {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.reading-price {
+  font-size: 2.6rem;
+  font-weight: 800;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.reading-unit {
+  margin-top: 6px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.confidence {
+  font-weight: 600;
+}
+
+.confidence-high {
+  color: var(--good);
+}
+
+.confidence-low,
+.confidence-none {
+  color: var(--danger);
+}
+
+.reading-image {
+  display: block;
+  width: 100%;
+  margin: 12px 0 4px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+.reading-details summary {
+  min-height: var(--tap);
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.reading-details pre {
+  margin: 8px 0 0;
+  padding: 12px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 0.85rem;
+  background: var(--bg);
+  border-radius: 8px;
+}
+
+.progress {
+  height: 10px;
+  margin: 12px 0;
+  border-radius: 999px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.2s;
+}
+
+/* Photo test page */
+
+.file-button {
+  display: grid;
+  place-items: center;
+  min-height: var(--tap);
+  margin-top: 16px;
+  cursor: pointer;
+}
+
+.file-button input {
+  display: none;
+}
+
+.crop-area {
+  position: relative;
+  margin-top: 16px;
+  touch-action: none;
+  user-select: none;
+}
+
+.crop-area img {
+  display: block;
+  width: 100%;
+  border-radius: 10px;
+}
+
+.crop-box {
+  position: absolute;
+  border: 3px solid var(--accent);
+  box-shadow: 0 0 0 100vmax rgb(0 0 0 / 0.45);
+  pointer-events: none;
+}
+
+.crop-area:has(.crop-box) {
+  overflow: hidden;
+  border-radius: 10px;
+}
+
+.test-output {
+  margin-top: 16px;
+}
+
 .fab {
   position: fixed;
   right: calc(env(safe-area-inset-right) + 20px);

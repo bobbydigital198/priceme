@@ -1,10 +1,17 @@
 import { useEffect, useState } from 'react'
-import { db } from './lib/db'
+import { db, type Product } from './lib/db'
 import { BarcodeScan } from './screens/BarcodeScan'
 import { Home } from './screens/Home'
+import { OcrTest } from './screens/OcrTest'
+import { PriceScan } from './screens/PriceScan'
 import { ProductDetail } from './screens/ProductDetail'
 
-export type Screen = { name: 'home' } | { name: 'product'; barcode: string } | { name: 'barcode' }
+export type Screen =
+  | { name: 'home' }
+  | { name: 'product'; barcode: string }
+  | { name: 'barcode' }
+  | { name: 'price'; product: Product }
+  | { name: 'ocr-test' }
 
 function App() {
   const [screen, setScreen] = useState<Screen>({ name: 'home' })
@@ -28,6 +35,7 @@ function App() {
         <Home
           onStartScan={() => openScreen({ name: 'barcode' })}
           onOpenProduct={(barcode) => openScreen({ name: 'product', barcode })}
+          onOpenOcrTest={() => openScreen({ name: 'ocr-test' })}
         />
       )
     case 'product':
@@ -39,11 +47,15 @@ function App() {
           onConfirm={async (product) => {
             // Saved so the next scan of this product is instant and works offline.
             await db.products.put(product)
-            alert(`${product.name} saved. The price tag step arrives in stage 4.`)
-            history.back()
+            // Replaces the barcode step, so back still goes straight home.
+            setScreen({ name: 'price', product })
           }}
         />
       )
+    case 'price':
+      return <PriceScan product={screen.product} onCancel={() => history.back()} onDone={() => history.back()} />
+    case 'ocr-test':
+      return <OcrTest onBack={() => history.back()} />
   }
 }
 

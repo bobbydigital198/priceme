@@ -4,9 +4,9 @@ import { ScanRow } from '../components/ScanRow'
 import { getRecentScans } from '../lib/queries'
 import { addSampleData, isSampleBarcode, removeSampleData } from '../lib/sampleData'
 
-type Props = { onStartScan: () => void; onOpenProduct: (barcode: string) => void }
+type Props = { onStartScan: () => void; onOpenProduct: (barcode: string) => void; onOpenOcrTest: () => void }
 
-export function Home({ onStartScan, onOpenProduct }: Props) {
+export function Home({ onStartScan, onOpenProduct, onOpenOcrTest }: Props) {
   const recent = useLiveQuery(() => getRecentScans())
   const hasSamples = recent?.some((r) => isSampleBarcode(r.scan.barcode)) ?? false
 
@@ -45,6 +45,11 @@ export function Home({ onStartScan, onOpenProduct }: Props) {
           )}
         </>
       )}
+
+      {/* Moves into Settings in stage 8. */}
+      <button type="button" className="text-button" onClick={onOpenOcrTest}>
+        Test the price reader with a photo
+      </button>
 
       <button type="button" className="fab" onClick={onStartScan} aria-label="Scan a product">
         <ScanIcon size={30} />
