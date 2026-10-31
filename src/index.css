@@ -245,6 +245,185 @@ button {
   color: var(--text-muted);
 }
 
+/* Camera screens */
+
+.camera-screen {
+  position: fixed;
+  inset: 0;
+  background: #000000;
+  color: #ffffff;
+  overflow: hidden;
+}
+
+.camera-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.camera-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.camera-top,
+.camera-bottom {
+  width: 100%;
+  padding: calc(env(safe-area-inset-top) + 16px) 16px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(rgb(0 0 0 / 0.7), transparent);
+}
+
+.camera-top {
+  align-items: flex-start;
+}
+
+.camera-bottom {
+  padding: 24px 16px calc(env(safe-area-inset-bottom) + 24px);
+  background: linear-gradient(transparent, rgb(0 0 0 / 0.7));
+}
+
+.camera-label {
+  margin: 0;
+  align-self: center;
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.camera-hint {
+  margin: 0;
+  font-size: 0.9rem;
+  text-align: center;
+  opacity: 0.85;
+}
+
+.camera-guide {
+  width: 70%;
+  max-width: 360px;
+  height: 22vh;
+  color: #ffffff;
+  opacity: 0.3;
+}
+
+.camera-button {
+  padding: 0 20px;
+  border: 1px solid rgb(255 255 255 / 0.5);
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.4);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* Cards, forms and buttons */
+
+.step-header {
+  margin-bottom: 16px;
+}
+
+.step-header .back-button {
+  margin-bottom: 8px;
+}
+
+.step-label {
+  margin: 0;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.card {
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.card h2 {
+  margin: 0 0 8px;
+  font-size: 1.25rem;
+}
+
+.card p {
+  margin: 0 0 8px;
+}
+
+.product-card {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.product-sub.small {
+  font-size: 0.8rem;
+}
+
+.button-row {
+  margin-top: 20px;
+  display: grid;
+  gap: 10px;
+}
+
+.primary-button,
+.secondary-button {
+  width: 100%;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.primary-button {
+  border: none;
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+.primary-button:disabled {
+  opacity: 0.4;
+}
+
+.secondary-button {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: inherit;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+  margin-top: 16px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.field input {
+  min-height: var(--tap);
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 1.15rem;
+}
+
+.field-error {
+  color: var(--danger);
+}
+
+.field-hint {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
 .fab {
   position: fixed;
   right: calc(env(safe-area-inset-right) + 20px);
