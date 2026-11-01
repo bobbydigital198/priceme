@@ -2,6 +2,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { useState } from 'react'
 import { PriceChart, type ChartSeries } from '../components/PriceChart'
 import { ProductThumb } from '../components/ProductThumb'
+import { CATEGORIES, categorise, type CategoryId } from '../lib/categories'
 import { shopColour, useDarkMode } from '../lib/chartColours'
 import { db, type Scan, type Shop } from '../lib/db'
 import { formatDaysAgo, formatDifference, formatPrice, formatScanTime, formatShop, formatUnitPrice } from '../lib/format'
@@ -71,6 +72,22 @@ export function ProductDetail({ barcode, onBack }: Props) {
           <p className="product-sub small">Barcode {barcode}</p>
         </div>
       </section>
+
+      {product && (
+        <label className="field category-field">
+          <span>Category{product.category ? '' : ' (chosen automatically)'}</span>
+          <select
+            value={categorise(product)}
+            onChange={(e) => db.products.update(barcode, { category: e.target.value as CategoryId })}
+          >
+            {CATEGORIES.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
 
       {scans && !summary && <p className="placeholder-note">No scans of this product left.</p>}
 

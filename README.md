@@ -40,8 +40,11 @@ Updates download by themselves in the background. To pick up a new version strai
   3. Fill the white frame with the price tag and tap the shutter button. Or tap **Enter manually** to type the price.
   4. Check the price and the shop, then tap **Save**.
 - **The shop** is remembered for 30 minutes, so the rest of a shopping trip needs no taps. Tap the shop to change it.
-- **See a product's history:** tap it on the home screen for its stats, a price chart, a per-shop comparison and every scan. Delete a wrong scan from there.
-- **Settings** (gear button, top right of the home screen): backups, your saved shops (rename, merge or delete), a price reader test using photos from your gallery, and deleting all data.
+- **The menu** (☰, top left) moves between the sections:
+  - **Scans:** your recent scans, each product once, with its latest price. Tap one for its stats, a price chart, a per-shop comparison and every scan; you can delete a wrong scan or change its category there.
+  - **Shops:** your shops, with visits, products and last visit. Tap one to see everything you've bought there and whether it's cheaper or dearer than elsewhere, or to rename, merge or delete it.
+  - **Products:** every category, greyed out until you've scanned something in it, with the number of different products in each. Tap a category to see its products.
+  - **Settings:** backups, a price reader test using photos from your gallery, and deleting all data.
 
 ## Backing up your data
 
@@ -55,7 +58,7 @@ Your scans are stored **only on your phone**, inside Chrome. If you clear Chrome
 
 ## What leaves your phone
 
-- **Barcode lookups** go to [Open Food Facts](https://world.openfoodfacts.org), a free, open product database, to get the product's name, brand, pack size and photo. Products are then remembered, so repeat scans don't go online.
+- **Barcode lookups** go to [Open Food Facts](https://world.openfoodfacts.org), a free, open product database, to get the product's name, brand, pack size, category and photo. If it doesn't know a barcode (usually non-food, like toilet paper or soap), the barcode is tried at its sister databases [Open Beauty Facts](https://world.openbeautyfacts.org) and [Open Products Facts](https://world.openproductsfacts.org), run by the same non-profit. Products are then remembered, so repeat scans don't go online.
 - **Your location** is only used if you tap **Use my location** in the shop list. Your approximate position is then sent to OpenStreetMap's Overpass service to find shops within 150 m, and nowhere else. It isn't saved.
 - **Price tag photos** never leave your phone. The price reader (Tesseract) runs on the phone itself.
 
@@ -121,8 +124,8 @@ If your phone shows a lower number than the latest update, it hasn't picked up t
 
 ```
 src/
-  screens/      One file per screen: Home, BarcodeScan, PriceScan, ConfirmPrice,
-                ProductDetail, Settings, OcrTest (price reader test)
+  screens/      One file per screen: Home (Scans), Shops, ShopDetail, Products, BarcodeScan,
+                PriceScan, ConfirmPrice, ProductDetail, Settings, OcrTest (price reader test)
   components/   Pieces used by the screens: price chart, shop picker, comparison table…
   lib/
     db.ts            The on-phone database: products, scans, shops
@@ -133,7 +136,8 @@ src/
     priceParser.ts   Turning the text on a tag into a price; tested in priceParser.test.ts
     priceRegion.ts   Finding the big price digits on a tag
     shops.ts         Choosing the shop, chain names, the optional nearby-shop search
-    stats.ts         Averages, lowest prices and other sums
+    stats.ts         Averages, lowest prices and other sums; shop numbers in shopStats.ts
+    categories.ts    Product categories and the rules that sort products into them
     backup.ts        Backup file format
 tests/          Tests that run the real price reader on sample tag images
 public/         App icons (made from icon.svg; see pwa-assets.config.ts)

@@ -3,6 +3,7 @@ import { BarcodeCamera } from '../components/BarcodeCamera'
 import { BarcodeIcon } from '../components/BarcodeIcon'
 import { ProductThumb } from '../components/ProductThumb'
 import { normaliseBarcode } from '../lib/barcode'
+import { CATEGORIES, categorise, type CategoryId } from '../lib/categories'
 import { db, type Product } from '../lib/db'
 import { fetchProduct } from '../lib/openFoodFacts'
 import { parseQuantity } from '../lib/quantity'
@@ -197,6 +198,9 @@ function ManualProduct({ barcode, onSubmit, onRescan }: { barcode: string; onSub
   const [name, setName] = useState('')
   const [quantityText, setQuantityText] = useState('')
   const quantity = parseQuantity(quantityText)
+  // Guessed from the name as you type, until you pick one yourself.
+  const [chosenCategory, setChosenCategory] = useState<CategoryId>()
+  const category = chosenCategory ?? categorise({ name })
 
   function submit(event: FormEvent) {
     event.preventDefault()
@@ -208,6 +212,7 @@ function ManualProduct({ barcode, onSubmit, onRescan }: { barcode: string; onSub
       quantityValue: quantity?.value,
       quantityUnit: quantity?.unit,
       source: 'manual',
+      category: chosenCategory,
       updatedAt: Date.now(),
     })
   }
@@ -215,7 +220,7 @@ function ManualProduct({ barcode, onSubmit, onRescan }: { barcode: string; onSub
   return (
     <form className="card" onSubmit={submit}>
       <h2>Product not found</h2>
-      <p>Open Food Facts doesn't know barcode {barcode}. Enter the details and PriceMe will remember them.</p>
+      <p>Open Food Facts and its sister databases don't know barcode {barcode}. Enter the details and PriceMe will remember them.</p>
       <label className="field">
         <span>Product name</span>
         <input type="text" required autoFocus value={name} onChange={(e) => setName(e.target.value)} />
@@ -223,6 +228,16 @@ function ManualProduct({ barcode, onSubmit, onRescan }: { barcode: string; onSub
       <label className="field">
         <span>Quantity (optional), e.g. 400 g, 1 L or 6 x 33 cl</span>
         <input type="text" value={quantityText} onChange={(e) => setQuantityText(e.target.value)} />
+      </label>
+      <label className="field">
+        <span>Category</span>
+        <select value={category} onChange={(e) => setChosenCategory(e.target.value as CategoryId)}>
+          {CATEGORIES.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
       </label>
       {quantityText.trim() && !quantity && (
         <p className="field-hint">PriceMe can't read that quantity, so it won't work out the price per kilo or litre.</p>

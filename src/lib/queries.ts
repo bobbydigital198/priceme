@@ -9,8 +9,22 @@ export type RecentScan = {
   productScanCount: number
 }
 
+// Latest scan of each product, newest first: scanning a product again moves it to the top
+// instead of adding a second row. Older scans stay in the product's history.
+export function latestPerProduct<T extends { barcode: string }>(newestFirst: T[], limit: number): T[] {
+  const seen = new Set<string>()
+  const latest: T[] = []
+  for (const scan of newestFirst) {
+    if (seen.has(scan.barcode)) continue
+    seen.add(scan.barcode)
+    latest.push(scan)
+    if (latest.length >= limit) break
+  }
+  return latest
+}
+
 export async function getRecentScans(limit = HOME_SCAN_LIMIT): Promise<RecentScan[]> {
-  const scans = await db.scans.orderBy('timestamp').reverse().limit(limit).toArray()
+  const scans = latestPerProduct(await db.scans.orderBy('timestamp').reverse().toArray(), limit)
 
   const barcodes = [...new Set(scans.map((s) => s.barcode))]
   const shopIds = [...new Set(scans.flatMap((s) => (s.shopId === undefined ? [] : [s.shopId])))]

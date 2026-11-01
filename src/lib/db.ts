@@ -1,4 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie'
+import type { CategoryId } from './categories'
 
 export type Product = {
   barcode: string
@@ -11,6 +12,12 @@ export type Product = {
   quantityUnit?: 'g' | 'ml'
   imageUrl?: string
   source: 'openfoodfacts' | 'manual'
+  // Which Open Food Facts database found it: food, beauty (toiletries) or other products.
+  lookupSource?: 'food' | 'beauty' | 'products'
+  // Category tags from that database, e.g. "en:pastas"; [] once checked and none found.
+  categoryTags?: string[]
+  // Set when you choose the category yourself; otherwise it's worked out (see categories.ts).
+  category?: CategoryId
   updatedAt: number
 }
 

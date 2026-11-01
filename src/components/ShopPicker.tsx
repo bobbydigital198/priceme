@@ -5,6 +5,9 @@ import { formatShop } from '../lib/format'
 import { CHAINS, fetchNearbyShops, getPosition, saveShop, type NearbyShop } from '../lib/shops'
 
 type Props = {
+  title?: string
+  // Off when adding a shop from the Shops section, where your shops are already listed.
+  showSaved?: boolean
   currentId?: number
   // Chain spotted on the tag, used to prefill a new shop and flag matching nearby shops.
   chain?: string
@@ -20,7 +23,7 @@ type Nearby =
 
 // Full-screen list for choosing the shop: your saved shops, a new shop, or (only if you ask)
 // shops near your current location.
-export function ShopPicker({ currentId, chain, onPick, onClose }: Props) {
+export function ShopPicker({ title = 'Which shop?', showSaved = true, currentId, chain, onPick, onClose }: Props) {
   const saved = useLiveQuery(() => db.shops.orderBy('lastUsed').reverse().toArray())
   const [nearby, setNearby] = useState<Nearby>({ status: 'idle' })
   const [name, setName] = useState(chain ?? '')
@@ -67,16 +70,16 @@ export function ShopPicker({ currentId, chain, onPick, onClose }: Props) {
   }
 
   return (
-    <div className="sheet" role="dialog" aria-modal="true" aria-label="Choose the shop">
+    <div className="sheet" role="dialog" aria-modal="true" aria-label={title}>
       <main className="screen">
         <div className="step-header">
           <button type="button" className="back-button" onClick={onClose}>
             Close
           </button>
-          <h1 className="product-name">Which shop?</h1>
+          <h1 className="product-name">{title}</h1>
         </div>
 
-        {saved && saved.length > 0 && (
+        {showSaved && saved && saved.length > 0 && (
           <section>
             <h2 className="section-heading">Your shops</h2>
             <ul className="shop-list">
@@ -112,7 +115,7 @@ export function ShopPicker({ currentId, chain, onPick, onClose }: Props) {
           </label>
           <div className="button-row">
             <button type="submit" className="primary-button" disabled={!name.trim()}>
-              Add and use this shop
+              {showSaved ? 'Add and use this shop' : 'Add this shop'}
             </button>
           </div>
         </form>

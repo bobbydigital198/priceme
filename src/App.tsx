@@ -1,16 +1,23 @@
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
+import { MenuDrawer, type Section } from './components/Menu'
 import { db, type Product } from './lib/db'
 import { BarcodeScan } from './screens/BarcodeScan'
 import { Home } from './screens/Home'
 import { OcrTest } from './screens/OcrTest'
 import { PriceScan } from './screens/PriceScan'
+import { Products } from './screens/Products'
 import { Settings } from './screens/Settings'
+import { ShopDetail } from './screens/ShopDetail'
+import { Shops } from './screens/Shops'
 
 // Loaded when first opened, so the chart library doesn't slow down starting the app.
 const ProductDetail = lazy(() => import('./screens/ProductDetail').then((m) => ({ default: m.ProductDetail })))
 
 export type Screen =
   | { name: 'home' }
+  | { name: 'shops' }
+  | { name: 'shop'; shopId: number }
+  | { name: 'products' }
   | { name: 'product'; barcode: string }
   | { name: 'barcode' }
   | { name: 'price'; product: Product }
@@ -19,18 +26,27 @@ export type Screen =
 
 function App() {
   // Screens you've opened, home first. The phone's back gesture steps back through them
-  // instead of closing the app.
+  // instead of closing the app. Each browser history entry records how deep it is.
   const [stack, setStack] = useState<Screen[]>([{ name: 'home' }])
+  const depth = useRef(0)
+  const [menuOpen, setMenuOpen] = useState(false)
   const screen = stack[stack.length - 1]
 
   useEffect(() => {
-    const onPop = () => setStack((s) => (s.length > 1 ? s.slice(0, -1) : s))
+    history.replaceState({ depth: 0 }, '')
+    const onPop = (event: PopStateEvent) => {
+      const target = (event.state as { depth?: number } | null)?.depth ?? 0
+      depth.current = target
+      setStack((s) => s.slice(0, target + 1))
+      setMenuOpen(false)
+    }
     window.addEventListener('popstate', onPop)
     return () => window.removeEventListener('popstate', onPop)
   }, [])
 
   function openScreen(next: Screen) {
-    history.pushState(null, '')
+    depth.current += 1
+    history.pushState({ depth: depth.current }, '')
     setStack((s) => [...s, next])
     window.scrollTo(0, 0)
   }
@@ -43,14 +59,53 @@ function App() {
 
   const back = () => history.back()
 
+  // Sections sit one step above Scans, so back from any section returns to Scans.
+  function openSection(section: Section) {
+    if (section === 'scans') {
+      if (depth.current > 0) history.go(-depth.current)
+      return
+    }
+    // The menu is only on Scans and the sections themselves, so this is either Scans or a section.
+    const next: Screen = { name: section }
+    if (depth.current === 0) openScreen(next)
+    else replaceScreen(next)
+  }
+
+  const currentSection: Section = screen.name === 'shops' ? 'shops' : screen.name === 'products' ? 'products' : 'scans'
+  const menu = menuOpen && (
+    <MenuDrawer
+      current={currentSection}
+      onNavigate={openSection}
+      onOpenSettings={() => openScreen({ name: 'settings' })}
+      onClose={() => setMenuOpen(false)}
+    />
+  )
+  const openMenu = () => setMenuOpen(true)
+  const openProduct = (barcode: string) => openScreen({ name: 'product', barcode })
+
   switch (screen.name) {
     case 'home':
       return (
-        <Home
-          onStartScan={() => openScreen({ name: 'barcode' })}
-          onOpenProduct={(barcode) => openScreen({ name: 'product', barcode })}
-          onOpenSettings={() => openScreen({ name: 'settings' })}
-        />
+        <>
+          {menu}
+          <Home onOpenMenu={openMenu} onStartScan={() => openScreen({ name: 'barcode' })} onOpenProduct={openProduct} />
+        </>
+      )
+    case 'shops':
+      return (
+        <>
+          {menu}
+          <Shops onOpenMenu={openMenu} onOpenShop={(shopId) => openScreen({ name: 'shop', shopId })} />
+        </>
+      )
+    case 'shop':
+      return <ShopDetail shopId={screen.shopId} onBack={back} onOpenProduct={openProduct} />
+    case 'products':
+      return (
+        <>
+          {menu}
+          <Products onOpenMenu={openMenu} onOpenProduct={openProduct} />
+        </>
       )
     case 'product':
       return (

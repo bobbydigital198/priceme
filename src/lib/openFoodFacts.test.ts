@@ -24,6 +24,8 @@ describe('mapOffProduct', () => {
       quantityUnit: 'g',
       imageUrl: 'https://images.openfoodfacts.org/small.jpg',
       source: 'openfoodfacts',
+      lookupSource: 'food',
+      categoryTags: [],
       updatedAt: 1000,
     })
   })
@@ -39,8 +41,15 @@ describe('mapOffProduct', () => {
       quantityUnit: undefined,
       imageUrl: undefined,
       source: 'openfoodfacts',
+      lookupSource: 'food',
+      categoryTags: [],
       updatedAt: 1000,
     })
+  })
+
+  it('keeps category tags and which database found it', () => {
+    const product = mapOffProduct('3700000000002', { product_name: 'Savon', categories_tags: ['en:soaps'] }, 1000, 'beauty')
+    expect(product).toMatchObject({ lookupSource: 'beauty', categoryTags: ['en:soaps'] })
   })
 
   it('treats a product with no name as not found', () => {
