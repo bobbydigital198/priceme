@@ -1,7 +1,5 @@
-// Image clean-up before OCR: resize, grayscale, contrast boost and adaptive threshold.
+// Image clean-up before OCR: resize, grayscale, contrast boost, dark-on-light and thresholding.
 
-// Tesseract reads best when text is roughly 30 to 60 pixels tall; this width gets typical tags there.
-const OCR_WIDTH = 1600
 const MAX_UPSCALE = 3
 
 export type GrayImage = { pixels: Uint8ClampedArray; width: number; height: number }
@@ -26,9 +24,9 @@ export function cropToCanvas(source: CanvasImageSource, sx: number, sy: number, 
   return canvas
 }
 
-export function toGray(source: HTMLCanvasElement): GrayImage {
-  // Upscales small crops and shrinks huge photos, so OCR gets consistent text sizes.
-  const scale = Math.min(MAX_UPSCALE, OCR_WIDTH / source.width)
+// Resizes to the given width (at most 3x enlargement) and converts to grayscale.
+export function toGray(source: HTMLCanvasElement, width: number): GrayImage {
+  const scale = Math.min(MAX_UPSCALE, width / source.width)
   const canvas = createCanvas(source.width * scale, source.height * scale)
   const context = context2d(canvas)
   context.imageSmoothingQuality = 'high'
@@ -58,6 +56,14 @@ export function stretchContrast(image: GrayImage): GrayImage {
 
   const pixels = image.pixels.map((p) => ((p - low) * 255) / (high - low))
   return { ...image, pixels }
+}
+
+// White text on a red or dark tag: flip so the text is dark on light, which Tesseract needs.
+export function darkTextOnLight(image: GrayImage): GrayImage {
+  let total = 0
+  for (const p of image.pixels) total += p
+  if (total / image.pixels.length >= 128) return image
+  return { ...image, pixels: image.pixels.map((p) => 255 - p) }
 }
 
 // Bradley adaptive threshold: each pixel is compared with the average of its neighbourhood,

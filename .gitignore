@@ -25,3 +25,6 @@ dist-ssr
 
 # Copied from node_modules by scripts/copy-ocr-assets.mjs
 public/ocr
+
+# Real tag photos from the web, for local testing only (not ours to publish)
+tests/fixtures/real

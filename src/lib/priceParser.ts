@@ -61,6 +61,8 @@ function fixDigits(text: string): { text: string; corrected: boolean } {
   // "3,49E": a trailing E is usually a misread euro sign.
   const euro = /^([0-9OoIlSB]+[,.][0-9OoIlSB]{2})[Ee]$/.exec(text)
   if (euro) text = euro[1] + '€'
+  // "4°99": a small raised euro sign is often read as a degree sign.
+  text = text.replace(/(\d)[°º](?=\d|$)/g, '$1€')
 
   if (!/\d/.test(text) || !/^[0-9OoDQlIi|!SsBZz,.€]+$/.test(text)) return { text, corrected: false }
   const fixed = text.replace(/[OoDQlIi|!SsBZz]/g, (c) => LOOKALIKES[c])
@@ -95,6 +97,10 @@ function tokenise(line: OcrLine): Token[] {
     if (isInt(a.text) && b && /^[,.]\d{2}$/.test(b.text)) {
       merged.push(join(a, b))
       i += 1
+    } else if (isInt(a.text) && b?.text === '€' && c && /^[,.]\d{2}$/.test(c.text)) {
+      // "4 €,99" with the euro sign printed above the cents.
+      merged.push(join(a, c), b)
+      i += 2
     } else if (/^\d{1,3}[,.]$/.test(a.text) && isCents(b?.text)) {
       merged.push(join(a, b))
       i += 1

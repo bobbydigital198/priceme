@@ -1,8 +1,9 @@
 // On-device text recognition with Tesseract.js. Nothing is sent anywhere: the engine and
 // French/English language data are bundled with the app (see scripts/copy-ocr-assets.mjs).
 import { createWorker, OEM, PSM, type Page, type Worker } from 'tesseract.js'
-import { adaptiveThreshold, grayToCanvas, makeThumbnail, stretchContrast, toGray, type GrayImage } from './imageProcessing'
+import { adaptiveThreshold, darkTextOnLight, grayToCanvas, makeThumbnail, stretchContrast, toGray, type GrayImage } from './imageProcessing'
 import { parsePriceTag, type Confidence, type OcrLine, type OcrWord, type ParseResult } from './priceParser'
+import { findPriceRegions, type PriceRegion, type Region } from './priceRegion'
 
 export type TagReading = {
   parsed: ParseResult
@@ -135,43 +136,84 @@ export async function recoverSplitPrice(
 
 const RANK: Record<Confidence, number> = { none: 0, low: 1, medium: 2, high: 3 }
 
+// Reads the big digits and the small cents beside them separately, then joins them into one line
+// for the parser. Tesseract misreads a big digit and small text in the same box, but reads each
+// well on its own. Only price characters are allowed, so a small "€" can't become a "9".
+async function readRegion(worker: Worker, image: HTMLCanvasElement, region: PriceRegion) {
+  const read = async (rectangle: Region, mode: PSM) => {
+    if (rectangle.width < 8 || rectangle.height < 8) return [] as OcrWord[]
+    await worker.setParameters({ tessedit_pageseg_mode: mode })
+    const { data } = await worker.recognize(image, { rectangle }, { blocks: true })
+    return toLines(data).flatMap((line) => line.words)
+  }
+
+  await worker.setParameters({ tessedit_char_whitelist: '0123456789,.€' })
+  try {
+    const words = [...(await read(region.digits, PSM.SINGLE_LINE)), ...(await read(region.beside, PSM.SINGLE_BLOCK))]
+    return { parsed: parsePriceTag([{ words }]), text: words.map((w) => w.text).join(' ') }
+  } finally {
+    await worker.setParameters({ tessedit_pageseg_mode: PSM.SPARSE_TEXT, tessedit_char_whitelist: '' })
+  }
+}
+
+// Ways of preparing the photo, tried in order until one gives a confident price.
+// Real photos read best as plain grayscale at a moderate size: huge digits confuse Tesseract,
+// and black-and-white thresholding tends to damage them, so that is the last resort.
+const PASSES = [
+  { width: 900, threshold: false },
+  { width: 1600, threshold: false },
+  { width: 1600, threshold: true },
+]
+
 // Reads a cropped photo of a price tag.
 export async function readPriceTag(tag: HTMLCanvasElement, progress?: (fraction: number) => void): Promise<TagReading> {
   const started = performance.now()
   const worker = await getOcrWorker()
+  const unsure = (parsed: ParseResult) => RANK[parsed.confidence] < RANK.medium
 
-  const gray = stretchContrast(toGray(tag))
-  const binaryImage = adaptiveThreshold(gray)
-  const binary = grayToCanvas(binaryImage)
-
-  async function attempt(image: HTMLCanvasElement, from: number, to: number) {
-    onProgress = (fraction) => progress?.(from + fraction * (to - from))
-    const { data } = await worker.recognize(image, {}, { blocks: true, text: true })
-    return { parsed: parsePriceTag(toLines(data)), rawText: data.text, image, page: data }
-  }
-
-  const unsure = (result: { parsed: ParseResult }) => RANK[result.parsed.confidence] < RANK.medium
-
+  let best: { parsed: ParseResult; rawText: string; image: HTMLCanvasElement } | undefined
   try {
-    let best = await attempt(binary, 0, 0.5)
-    // Thresholding sometimes destroys thin or coloured text, so try the plain grayscale image too.
-    if (unsure(best)) {
-      const second = await attempt(grayToCanvas(gray), 0.5, 0.85)
-      if (RANK[second.parsed.confidence] > RANK[best.parsed.confidence]) best = second
-    }
-    if (unsure(best)) {
+    for (const [i, pass] of PASSES.entries()) {
+      const gray = darkTextOnLight(stretchContrast(toGray(tag, pass.width)))
+      const prepared = pass.threshold ? adaptiveThreshold(gray) : gray
+      const image = grayToCanvas(prepared)
+
+      onProgress = (fraction) => progress?.((i + fraction) / PASSES.length)
+      const { data } = await worker.recognize(image, {}, { blocks: true, text: true })
       onProgress = undefined
-      const lines = await recoverSplitPrice(worker, best.image, best.image, best.page, binaryImage)
-      const recovered = lines && parsePriceTag(lines)
-      if (recovered && RANK[recovered.confidence] > RANK[best.parsed.confidence]) best = { ...best, parsed: recovered }
+      let parsed = parsePriceTag(toLines(data))
+      let rawText = data.text
+      // Black-and-white map for finding where things are; handles shadows across the tag.
+      const binary = pass.threshold ? prepared : adaptiveThreshold(gray)
+
+      if (unsure(parsed)) {
+        // Read the biggest text on its own, in case Tesseract's layout step skipped the price.
+        for (const region of findPriceRegions(binary)) {
+          const found = await readRegion(worker, image, region)
+          rawText += `\n[price area] ${found.text}`
+          // The unit price is small text elsewhere on the tag, so keep it from the full read.
+          const merged = { ...found.parsed, unitPrice: found.parsed.unitPrice ?? parsed.unitPrice, unitBasis: found.parsed.unitBasis ?? parsed.unitBasis }
+          if (RANK[merged.confidence] > RANK[parsed.confidence]) parsed = merged
+          if (!unsure(parsed)) break
+        }
+      }
+
+      if (unsure(parsed)) {
+        const lines = await recoverSplitPrice(worker, image, image, data, binary)
+        const recovered = lines && parsePriceTag(lines)
+        if (recovered && RANK[recovered.confidence] > RANK[parsed.confidence]) parsed = recovered
+      }
+
+      if (!best || RANK[parsed.confidence] > RANK[best.parsed.confidence]) best = { parsed, rawText, image }
+      if (!unsure(best.parsed)) break
     }
     progress?.(1)
 
     return {
-      parsed: best.parsed,
-      rawText: best.rawText,
+      parsed: best!.parsed,
+      rawText: best!.rawText,
       thumbnail: makeThumbnail(tag),
-      processedImage: makeThumbnail(best.image, 800, 0.7),
+      processedImage: makeThumbnail(best!.image, 800, 0.7),
       durationMs: performance.now() - started,
     }
   } finally {

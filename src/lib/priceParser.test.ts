@@ -69,6 +69,16 @@ describe('OCR mistakes', () => {
     expect(result.confidence).toBe('medium')
   })
 
+  it('treats a degree sign between euros and cents as a euro sign', () => {
+    expect(parsePriceTag('4°99').price).toBe(4.99)
+    expect(parsePriceTag('4° 99').price).toBe(4.99)
+  })
+
+  it('reads "4 €,99" with the euro sign above the cents', () => {
+    expect(parsePriceTag('4 € ,99').price).toBe(4.99)
+    expect(parsePriceTag('4€,99').price).toBe(4.99)
+  })
+
   it('treats a trailing E or C as a euro sign', () => {
     expect(parsePriceTag('3,49E').price).toBe(3.49)
     expect(parsePriceTag('3,49 C').price).toBe(3.49)
