@@ -99,7 +99,7 @@ function BackupSection({ scanCount }: { scanCount: number }) {
             {count(pending.backup.shops.length, 'shop')}, saved {formatScanDay(Date.parse(pending.backup.exportedAt))}.
           </p>
           <p>
-            <strong>Restoring replaces everything currently in PriceMe</strong>
+            <strong>Restoring replaces everything currently in PrixIt</strong>
             {scanCount ? ` (${count(scanCount, 'scan')})` : ''}.
           </p>
           <div className="delete-actions">

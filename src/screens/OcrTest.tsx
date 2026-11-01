@@ -118,7 +118,7 @@ export function OcrTest({ onBack }: Props) {
         {failed && (
           <section className="card">
             <h2>The price reader didn't start</h2>
-            <p>Close PriceMe completely and open it again.</p>
+            <p>Close PrixIt completely and open it again.</p>
           </section>
         )}
         {reading && <ReadingResult reading={reading} />}

@@ -220,7 +220,7 @@ function ManualProduct({ barcode, onSubmit, onRescan }: { barcode: string; onSub
   return (
     <form className="card" onSubmit={submit}>
       <h2>Product not found</h2>
-      <p>Open Food Facts and its sister databases don't know barcode {barcode}. Enter the details and PriceMe will remember them.</p>
+      <p>Open Food Facts and its sister databases don't know barcode {barcode}. Enter the details and PrixIt will remember them.</p>
       <label className="field">
         <span>Product name</span>
         <input type="text" required autoFocus value={name} onChange={(e) => setName(e.target.value)} />
@@ -240,7 +240,7 @@ function ManualProduct({ barcode, onSubmit, onRescan }: { barcode: string; onSub
         </select>
       </label>
       {quantityText.trim() && !quantity && (
-        <p className="field-hint">PriceMe can't read that quantity, so it won't work out the price per kilo or litre.</p>
+        <p className="field-hint">PrixIt can't read that quantity, so it won't work out the price per kilo or litre.</p>
       )}
       <div className="button-row">
         <button type="submit" className="primary-button" disabled={!name.trim()}>

@@ -1,18 +1,20 @@
-// Backup files: everything PriceMe stores, as one JSON file you can keep and restore.
+// Backup files: everything PrixIt stores, as one JSON file you can keep and restore.
 // The checks here run before anything is replaced, so a wrong or damaged file can't wipe your data.
 import type { Product, Scan, Shop } from './db'
 
 export type BackupData = { products: Product[]; scans: Scan[]; shops: Shop[] }
+// The app was called PriceMe when backups began; the label inside the file stays the same so
+// older backups still restore.
 export type Backup = BackupData & { app: 'PriceMe'; format: 1; exportedAt: string; appVersion: string }
 
 export function makeBackup(data: BackupData, appVersion: string, now = new Date()): Backup {
   return { app: 'PriceMe', format: 1, exportedAt: now.toISOString(), appVersion, ...data }
 }
 
-// "priceme-backup-2026-11-01.json"
+// "prixit-backup-2026-11-01.json"
 export function backupFileName(now = new Date()): string {
   const pad = (n: number) => String(n).padStart(2, '0')
-  return `priceme-backup-${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}.json`
+  return `prixit-backup-${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}.json`
 }
 
 export type ParsedBackup = { ok: true; backup: Backup } | { ok: false; error: string }
@@ -26,10 +28,10 @@ export function parseBackup(text: string): ParsedBackup {
   try {
     json = JSON.parse(text)
   } catch {
-    return { ok: false, error: "This file isn't a PriceMe backup (it isn't valid JSON)." }
+    return { ok: false, error: "This file isn't a PrixIt backup (it isn't valid JSON)." }
   }
-  if (!isObject(json) || json.app !== 'PriceMe') return { ok: false, error: "This file isn't a PriceMe backup." }
-  if (json.format !== 1) return { ok: false, error: 'This backup was made by a newer version of PriceMe. Update the app and try again.' }
+  if (!isObject(json) || json.app !== 'PriceMe') return { ok: false, error: "This file isn't a PrixIt backup." }
+  if (json.format !== 1) return { ok: false, error: 'This backup was made by a newer version of PrixIt. Update the app and try again.' }
   if (!Array.isArray(json.products) || !Array.isArray(json.scans) || !Array.isArray(json.shops)) {
     return { ok: false, error: 'This backup is incomplete or damaged.' }
   }

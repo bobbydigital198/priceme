@@ -1,8 +1,10 @@
-# PriceMe
+# PrixIt
 
-A personal phone app for logging supermarket prices. You scan a product's barcode, photograph its shelf price tag, and PriceMe records the price, the shop and the date, so you can see how prices change over time and spot when you're being overcharged.
+A personal phone app for logging supermarket prices. You scan a product's barcode, photograph its shelf price tag, and PrixIt records the price, the shop and the date, so you can see how prices change over time and spot when you're being overcharged.
 
 **Live app:** https://bobbydigital198.github.io/priceme/
+
+(The app was first called PriceMe. The web address and project folder keep that name, because changing the address would separate the installed app from its saved data.)
 
 Everything runs on your phone. There are no accounts and no server, and it's free to run.
 
@@ -20,23 +22,23 @@ Everything runs on your phone. There are no accounts and no server, and it's fre
 
 ## Installing on your phone
 
-PriceMe is a web app that installs like a normal app. On your Samsung Galaxy S24:
+PrixIt is a web app that installs like a normal app. On your Samsung Galaxy S24:
 
 1. Open **Chrome** and go to https://bobbydigital198.github.io/priceme/
 2. Tap the **⋮** menu (top right), then **Add to home screen**, then **Install**.
-3. Open **PriceMe** from your home screen. It opens full screen, without Chrome's address bar.
+3. Open **PrixIt** from your home screen. It opens full screen, without Chrome's address bar.
 
 The first time you open it, it downloads about 16 MB (mostly the price reader), so do this on wifi. After that it works offline, apart from looking up new products.
 
 ### Getting updates
 
-Updates download by themselves in the background. To pick up a new version straight away, close PriceMe completely (swipe it away from your recent apps) and open it again, twice. The version number at the bottom of the home screen tells you which version you have.
+Updates download by themselves in the background. To pick up a new version straight away, close PrixIt completely (swipe it away from your recent apps) and open it again, twice. The version number at the bottom of the home screen tells you which version you have.
 
 ## Using the app
 
 - **Scan a product:** tap the yellow button at the bottom right.
   1. Point the camera at the barcode. If it won't scan, tap **Type barcode instead**.
-  2. Check the product and tap **Confirm**. Unknown products can be typed in, and PriceMe remembers them.
+  2. Check the product and tap **Confirm**. Unknown products can be typed in, and PrixIt remembers them.
   3. Fill the white frame with the price tag and tap the shutter button. Or tap **Enter manually** to type the price.
   4. Check the price and the shop, then tap **Save**.
 - **The shop** is remembered for 30 minutes, so the rest of a shopping trip needs no taps. Tap the shop to change it.
@@ -51,10 +53,10 @@ Updates download by themselves in the background. To pick up a new version strai
 Your scans are stored **only on your phone**, inside Chrome. If you clear Chrome's data, uninstall Chrome or lose your phone, they're gone. Save a backup now and then:
 
 1. Open **Settings** and tap **Save a backup**.
-2. A file called something like `priceme-backup-2026-11-01.json` is saved to your phone's **Downloads** folder.
+2. A file called something like `prixit-backup-2026-11-01.json` is saved to your phone's **Downloads** folder.
 3. Keep a copy somewhere other than your phone. For example, open the **Files** app, long-press the file, tap **Share** and choose **Drive**, or email it to yourself.
 
-**To restore** (for example on a new phone): install PriceMe, open **Settings**, tap **Restore from a backup** and choose the file. PriceMe shows what the backup contains before doing anything. Restoring **replaces** everything currently in the app.
+**To restore** (for example on a new phone): install PrixIt, open **Settings**, tap **Restore from a backup** and choose the file. PrixIt shows what the backup contains before doing anything. Restoring **replaces** everything currently in the app.
 
 ## What leaves your phone
 

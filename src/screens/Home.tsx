@@ -14,8 +14,8 @@ export function Home({ onOpenMenu, onStartScan, onOpenProduct }: Props) {
       <header className="home-header">
         <MenuButton onClick={onOpenMenu} />
         <div>
-          <h1 className="app-title">PriceMe</h1>
-          <p className="app-subtitle">Fuck dynamic pricing</p>
+          <h1 className="app-title">PrixIt</h1>
+          <p className="app-subtitle">Stay ahead of dynamic pricing</p>
         </div>
       </header>
 

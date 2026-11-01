@@ -40,7 +40,7 @@ export function ShopPicker({ title = 'Which shop?', showSaved = true, currentId,
       setNearby({
         status: 'error',
         message: denied
-          ? 'Location is blocked for PriceMe, which is fine. Choose or add a shop above instead.'
+          ? 'Location is blocked for PrixIt, which is fine. Choose or add a shop above instead.'
           : "Couldn't get your location. Choose or add a shop above instead.",
       })
       return

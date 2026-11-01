@@ -23,8 +23,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'icon.svg', 'apple-touch-icon-180x180.png'],
       manifest: {
-        name: 'PriceMe',
-        short_name: 'PriceMe',
+        name: 'PrixIt',
+        short_name: 'PrixIt',
         description: 'Log supermarket prices by scanning barcodes and price tags.',
         lang: 'en-GB',
         start_url: '/priceme/',

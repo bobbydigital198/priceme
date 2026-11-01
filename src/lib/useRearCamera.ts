@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 function cameraErrorMessage(error: unknown): string {
   const name = error instanceof DOMException ? error.name : ''
   if (name === 'NotAllowedError') {
-    return 'PriceMe needs the camera to scan barcodes and price tags. If you blocked it before, open Chrome, go to Settings, then Site settings, then Camera, and allow it for bobbydigital198.github.io.'
+    return 'PrixIt needs the camera to scan barcodes and price tags. If you blocked it before, open Chrome, go to Settings, then Site settings, then Camera, and allow it for bobbydigital198.github.io.'
   }
   if (name === 'NotFoundError') return 'No camera was found on this device.'
   if (name === 'NotReadableError') return 'The camera is busy. Close any other app using it and try again.'

@@ -49,7 +49,7 @@ export function ReadingResult({ reading, product }: Props) {
       <p className="product-sub small">Read in {(reading.durationMs / 1000).toFixed(1)} seconds</p>
 
       <details className="reading-details">
-        <summary>What PriceMe read</summary>
+        <summary>What PrixIt read</summary>
         <img className="reading-image" src={reading.processedImage} alt="The cleaned-up image the reader used" />
         <pre>{reading.rawText.trim() || '(no text found)'}</pre>
       </details>

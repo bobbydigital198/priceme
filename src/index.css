@@ -57,11 +57,15 @@ button {
   padding: calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 100px);
 }
 
+/* Menu button on the left, name and tagline centred on the screen (an empty column on the
+   right balances the button). */
 .home-header {
   margin-bottom: 24px;
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: var(--tap) 1fr var(--tap);
+  align-items: center;
+  gap: 8px;
+  text-align: center;
 }
 
 .menu-button {
@@ -321,6 +325,7 @@ button {
 .app-subtitle {
   margin: 2px 0 0;
   font-size: 0.95rem;
+  font-style: italic;
   color: var(--text-muted);
 }
 

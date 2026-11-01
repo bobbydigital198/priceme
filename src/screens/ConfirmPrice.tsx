@@ -138,7 +138,7 @@ export function ConfirmPrice({ product, reading, onSave, onRetake, onCancel }: P
       <form className="card" onSubmit={save} noValidate>
         {!reading && <p className="field-hint">Type the price from the tag.</p>}
         {reading && !trusted && (
-          <p className="confidence confidence-low">PriceMe couldn't read the price for sure, so please type it in.</p>
+          <p className="confidence confidence-low">PrixIt couldn't read the price for sure, so please type it in.</p>
         )}
         {reading && parsed?.confidence === 'medium' && trusted && (
           <p className="confidence confidence-medium">Fairly sure. Check it against the tag.</p>

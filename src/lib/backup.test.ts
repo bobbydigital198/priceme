@@ -16,12 +16,12 @@ describe('backups', () => {
   })
 
   it('names the file by date', () => {
-    expect(backupFileName(new Date(2026, 0, 5))).toBe('priceme-backup-2026-01-05.json')
+    expect(backupFileName(new Date(2026, 0, 5))).toBe('prixit-backup-2026-01-05.json')
   })
 
   it.each([
     ['not JSON', 'hello', "isn't valid JSON"],
-    ['another app', JSON.stringify({ app: 'Other', format: 1 }), "isn't a PriceMe backup"],
+    ['another app', JSON.stringify({ app: 'Other', format: 1 }), "isn't a PrixIt backup"],
     ['a newer format', JSON.stringify({ app: 'PriceMe', format: 2, products: [], scans: [], shops: [] }), 'newer version'],
     ['missing lists', JSON.stringify({ app: 'PriceMe', format: 1, products: [] }), 'incomplete'],
     ['a broken scan', JSON.stringify({ app: 'PriceMe', format: 1, products: [], shops: [], scans: [{ id: 1, barcode: 'x', price: 'free' }] }), 'damaged'],

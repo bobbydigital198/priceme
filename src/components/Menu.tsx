@@ -36,7 +36,7 @@ export function MenuDrawer({ current, onNavigate, onOpenSettings, onClose }: Pro
   return (
     <div className="drawer-backdrop" onClick={onClose}>
       <nav className="drawer" aria-label="Sections" onClick={(e) => e.stopPropagation()}>
-        <p className="drawer-title">PriceMe</p>
+        <p className="drawer-title">PrixIt</p>
         <ul>
           {SECTIONS.map((s) => (
             <li key={s.id}>
