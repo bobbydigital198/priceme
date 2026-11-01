@@ -150,7 +150,10 @@ async function readRegion(worker: Worker, image: HTMLCanvasElement, region: Pric
   await worker.setParameters({ tessedit_char_whitelist: '0123456789,.€' })
   try {
     const words = [...(await read(region.digits, PSM.SINGLE_LINE)), ...(await read(region.beside, PSM.SINGLE_BLOCK))]
-    return { parsed: parsePriceTag([{ words }]), text: words.map((w) => w.text).join(' ') }
+    // Tesseract scores digit-only reads low even when right. Finding a big digit with smaller
+    // ones beside it is good evidence in itself, so count these as "fairly sure", never more.
+    const steady = words.map((w) => ({ ...w, confidence: 60 }))
+    return { parsed: parsePriceTag([{ words: steady }]), text: words.map((w) => w.text).join(' ') }
   } finally {
     await worker.setParameters({ tessedit_pageseg_mode: PSM.SPARSE_TEXT, tessedit_char_whitelist: '' })
   }
@@ -186,15 +189,25 @@ export async function readPriceTag(tag: HTMLCanvasElement, progress?: (fraction:
       // Black-and-white map for finding where things are; handles shadows across the tag.
       const binary = pass.threshold ? prepared : adaptiveThreshold(gray)
 
-      if (unsure(parsed)) {
-        // Read the biggest text on its own, in case Tesseract's layout step skipped the price.
-        for (const region of findPriceRegions(binary)) {
-          const found = await readRegion(worker, image, region)
-          rawText += `\n[price area] ${found.text}`
+      // Always read the biggest text on its own too: Tesseract's layout step can skip the price,
+      // or pair cents with digits from another line. The biggest text is the selling price,
+      // so when that read is reasonably sure it wins.
+      for (const region of findPriceRegions(binary)) {
+        const found = await readRegion(worker, image, region)
+        rawText += `\n[price area] ${found.text}`
+        if (found.parsed.price === undefined) continue
+        const fullRead = parsed
+        const otherPrices = unsure(fullRead) ? [] : [fullRead.price, ...fullRead.alternatives]
+        const merged: ParseResult = {
+          ...found.parsed,
           // The unit price is small text elsewhere on the tag, so keep it from the full read.
-          const merged = { ...found.parsed, unitPrice: found.parsed.unitPrice ?? parsed.unitPrice, unitBasis: found.parsed.unitBasis ?? parsed.unitBasis }
-          if (RANK[merged.confidence] > RANK[parsed.confidence]) parsed = merged
-          if (!unsure(parsed)) break
+          unitPrice: found.parsed.unitPrice ?? fullRead.unitPrice,
+          unitBasis: found.parsed.unitBasis ?? fullRead.unitBasis,
+          alternatives: [...new Set([...found.parsed.alternatives, ...otherPrices.filter((p): p is number => p !== undefined && p !== found.parsed.price)])],
+        }
+        if (!unsure(merged) || RANK[merged.confidence] > RANK[fullRead.confidence]) {
+          parsed = merged
+          if (!unsure(merged)) break
         }
       }
 
