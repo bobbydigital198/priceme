@@ -1,6 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <rect width="512" height="512" fill="#111111"/>
-  <g transform="translate(96 96) scale(13.333)" fill="#ffd60a" stroke="none">
+  <!-- Logo centred and as large as fits Android's round "safe zone" (80% of the icon). -->
+  <g transform="translate(58 58) scale(16.5)" fill="#ffd60a" stroke="none">
     <rect x="1.5" y="6" width="1.4" height="12"/>
     <rect x="3.7" y="6" width="0.7" height="12"/>
     <rect x="5.2" y="6" width="1.6" height="12"/>
