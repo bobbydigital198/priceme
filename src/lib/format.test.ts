@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   formatAmountInput,
+  formatDaysAgo,
   formatDifference,
   formatPrice,
   formatScanCount,
@@ -59,6 +60,17 @@ describe('formatScanDay', () => {
     expect(formatScanDay(new Date(2026, 9, 30, 9, 0).getTime(), now)).toBe('yesterday')
     expect(formatScanDay(new Date(2026, 9, 12, 9, 0).getTime(), now)).toBe('12 Oct')
     expect(formatScanDay(new Date(2025, 9, 12, 9, 0).getTime(), now)).toBe('12 Oct 2025')
+  })
+})
+
+describe('formatDaysAgo', () => {
+  const now = new Date(2026, 9, 31, 18, 0).getTime()
+
+  it('counts days for the last two months', () => {
+    expect(formatDaysAgo(new Date(2026, 9, 31, 9, 0).getTime(), now)).toBe('today')
+    expect(formatDaysAgo(new Date(2026, 9, 30, 9, 0).getTime(), now)).toBe('yesterday')
+    expect(formatDaysAgo(new Date(2026, 9, 19, 9, 0).getTime(), now)).toBe('12 days ago')
+    expect(formatDaysAgo(new Date(2026, 5, 1, 9, 0).getTime(), now)).toBe('1 Jun')
   })
 })
 

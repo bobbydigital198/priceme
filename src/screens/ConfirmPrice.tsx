@@ -1,11 +1,12 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useRef, useState, type FormEvent } from 'react'
 import { PriceComparison } from '../components/PriceComparison'
-import { db, type Product, type Scan } from '../lib/db'
-import { formatAmountInput, formatPrice, parseAmountInput } from '../lib/format'
+import { ShopPicker } from '../components/ShopPicker'
+import { db, type Product, type Scan, type Shop } from '../lib/db'
+import { formatAmountInput, formatPrice, formatShop, parseAmountInput } from '../lib/format'
 import type { TagReading } from '../lib/ocr'
 import { computeUnitPrice, MAX_PRICE, MAX_UNIT_PRICE, type UnitBasis } from '../lib/priceParser'
-import { summariseHistory } from '../lib/stats'
+import { detectChain, suggestShop } from '../lib/shops'
 
 type Props = {
   product: Product
@@ -35,7 +36,17 @@ export function ConfirmPrice({ product, reading, onSave, onRetake, onCancel }: P
   const priceInput = useRef<HTMLInputElement>(null)
 
   const scans = useLiveQuery(() => db.scans.where('barcode').equals(product.barcode).toArray(), [product.barcode])
-  const history = summariseHistory(scans ?? [])
+
+  // The shop: whatever you pick, otherwise the suggestion from your last scan or the tag's chain.
+  const shops = useLiveQuery(() => db.shops.toArray())
+  const lastScan = useLiveQuery(async () => ({ scan: await db.scans.orderBy('timestamp').last() }))
+  const shopById = new Map((shops ?? []).map((s): [number, Shop] => [s.id!, s]))
+  const chain = detectChain(reading?.rawText)
+  const suggestion = shops && lastScan ? suggestShop(lastScan.scan, shops, chain) : undefined
+  const [chosenShopId, setChosenShopId] = useState<number>()
+  const [picking, setPicking] = useState(false)
+  const shopId = chosenShopId ?? suggestion?.shopId
+  const shop = shopId === undefined ? undefined : shopById.get(shopId)
 
   const price = parseAmountInput(priceText)
   const priceError = price === undefined ? 'Enter the price, e.g. 3,49' : price > MAX_PRICE ? `That's over ${MAX_PRICE} €. Check the price.` : ''
@@ -71,9 +82,15 @@ export function ConfirmPrice({ product, reading, onSave, onRetake, onCancel }: P
       priceInput.current?.focus()
       return
     }
+    // Every scan records its shop.
+    if (shopId === undefined) {
+      setPicking(true)
+      return
+    }
     const hasUnit = unitPrice !== undefined && unitBasis !== undefined
     onSave({
       barcode: product.barcode,
+      shopId,
       price,
       unitPrice: hasUnit ? unitPrice : undefined,
       unitBasis: hasUnit ? unitBasis : undefined,
@@ -86,6 +103,18 @@ export function ConfirmPrice({ product, reading, onSave, onRetake, onCancel }: P
 
   return (
     <main className="screen">
+      {picking && (
+        <ShopPicker
+          currentId={shopId}
+          chain={chain}
+          onPick={(id) => {
+            setChosenShopId(id)
+            setPicking(false)
+          }}
+          onClose={() => setPicking(false)}
+        />
+      )}
+
       <div className="step-header">
         <button type="button" className="back-button" onClick={onCancel}>
           Cancel
@@ -95,6 +124,15 @@ export function ConfirmPrice({ product, reading, onSave, onRetake, onCancel }: P
           {product.name}
           {product.quantityText ? `, ${product.quantityText}` : ''}
         </p>
+      </div>
+
+      <div className="shop-row">
+        <button type="button" className={`shop-chip${shop ? '' : ' empty'}`} onClick={() => setPicking(true)}>
+          {shop ? formatShop(shop) : 'Choose the shop'}
+        </button>
+        {shop && chosenShopId === undefined && suggestion && (
+          <span className="product-sub small">{suggestion.reason === 'session' ? 'Same shop as your last scan' : 'Chain matched from the tag'}</span>
+        )}
       </div>
 
       <form className="card" onSubmit={save} noValidate>
@@ -172,7 +210,7 @@ export function ConfirmPrice({ product, reading, onSave, onRetake, onCancel }: P
         {reading && <img className="reading-image" src={reading.thumbnail} alt="The price tag photo" />}
 
         <h2 className="comparison-heading">Compared with before</h2>
-        {scans && <PriceComparison history={history} current={price} />}
+        {scans && <PriceComparison scans={scans} shops={shopById} shopId={shopId} current={price} />}
 
         <div className="button-row">
           <button type="submit" className="primary-button">

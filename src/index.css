@@ -700,6 +700,96 @@ button {
   margin-top: 4px;
 }
 
+/* Shops */
+
+.shop-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  margin-bottom: 12px;
+}
+
+.shop-chip {
+  max-width: 100%;
+  padding: 0 16px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: inherit;
+  font-weight: 700;
+  text-align: left;
+}
+
+.shop-chip::before {
+  content: 'Shop: ';
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.shop-chip.empty {
+  border: 2px dashed var(--accent);
+}
+
+.shop-chip.empty::before {
+  content: '';
+}
+
+.sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  overflow-y: auto;
+  background: var(--bg);
+}
+
+.sheet .screen {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 32px);
+}
+
+.sheet section,
+.sheet .card {
+  margin-bottom: 20px;
+}
+
+.shop-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.shop-list button {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: inherit;
+  font-weight: 600;
+}
+
+.shop-list button.selected {
+  border: 2px solid var(--accent);
+}
+
+.shop-meta {
+  flex: none;
+  font-weight: 400;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.nearby .secondary-button {
+  margin-top: 8px;
+}
+
 /* Photo test page */
 
 .file-button {

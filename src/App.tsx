@@ -58,7 +58,11 @@ function App() {
           product={screen.product}
           onCancel={() => history.back()}
           onSave={async (scan) => {
-            await db.scans.add(scan)
+            await db.transaction('rw', db.scans, db.shops, async () => {
+              await db.scans.add(scan)
+              // Keeps your most used shops at the top of the shop list.
+              if (scan.shopId !== undefined) await db.shops.update(scan.shopId, { lastUsed: scan.timestamp })
+            })
             // Back to home, where the new scan is at the top of the list.
             history.back()
           }}

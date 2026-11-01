@@ -62,6 +62,13 @@ export function formatScanDay(timestamp: number, now: number = Date.now()): stri
   return fullDateFormat.format(date)
 }
 
+// "today", "yesterday", "12 days ago", then the date after two months.
+export function formatDaysAgo(timestamp: number, now: number = Date.now()): string {
+  const days = Math.round((startOfDay(new Date(now)) - startOfDay(new Date(timestamp))) / 86_400_000)
+  if (days < 2 || days > 60) return formatScanDay(timestamp, now)
+  return `${days} days ago`
+}
+
 export function formatScanCount(count: number): string {
   return count === 1 ? 'Scanned once' : `Scanned ${count} times`
 }

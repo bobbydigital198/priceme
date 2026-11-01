@@ -1,21 +1,38 @@
 import { PRICE_WARNING_THRESHOLD } from '../lib/constants'
-import { formatDifference, formatPrice, formatScanDay } from '../lib/format'
-import { isAboveUsual, priceDifference, type PriceHistory } from '../lib/stats'
+import type { Scan, Shop } from '../lib/db'
+import { formatDaysAgo, formatDifference, formatPrice, formatShop } from '../lib/format'
+import { isAboveUsual, priceDifference, summariseHistory } from '../lib/stats'
 
-type Props = { history: PriceHistory; current?: number }
+type Props = {
+  scans: Scan[]
+  shops: Map<number, Shop>
+  // The shop this scan is being saved for, if chosen.
+  shopId?: number
+  current?: number
+}
 
 // How the price you're about to save compares with what you've paid before.
-export function PriceComparison({ history, current }: Props) {
-  if (!history.count || !history.last || !history.lowest || history.average === undefined) {
+export function PriceComparison({ scans, shops, shopId, current }: Props) {
+  const history = summariseHistory(scans)
+  if (!history.last || !history.lowest || history.average === undefined) {
     return <p className="product-sub">First time you've scanned this product, so there's nothing to compare yet.</p>
   }
 
-  const above = current !== undefined && isAboveUsual(current, history.average)
+  const atShop = shopId === undefined ? undefined : summariseHistory(scans.filter((s) => s.shopId === shopId))
+  const where = (scan: Scan) => {
+    const shop = scan.shopId === undefined ? undefined : shops.get(scan.shopId)
+    return [shop && formatShop(shop), formatDaysAgo(scan.timestamp)].filter(Boolean).join(', ')
+  }
+  const scansLabel = (count: number) => (count === 1 ? '1 scan' : `${count} scans`)
+
   const rows = [
-    { label: 'Last paid', price: history.last.price, note: formatScanDay(history.last.timestamp) },
-    { label: 'Lowest', price: history.lowest.price, note: formatScanDay(history.lowest.timestamp) },
-    { label: 'Average', price: history.average, note: history.count === 1 ? '1 scan' : `${history.count} scans` },
+    ...(atShop?.average !== undefined ? [{ label: 'Usual at this shop', price: atShop.average, note: scansLabel(atShop.count) }] : []),
+    { label: 'Cheapest anywhere', price: history.lowest.price, note: where(history.lowest) },
+    { label: 'Last paid', price: history.last.price, note: where(history.last) },
+    { label: 'Average', price: history.average, note: scansLabel(history.count) },
   ]
+
+  const above = current !== undefined && isAboveUsual(current, history.average)
 
   return (
     <section className="comparison">

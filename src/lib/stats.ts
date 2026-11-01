@@ -3,14 +3,14 @@ import { PRICE_WARNING_THRESHOLD } from './constants'
 
 type PricePoint = { price: number; timestamp: number }
 
-export type PriceHistory = {
+export type PriceHistory<T extends PricePoint = PricePoint> = {
   count: number
-  last?: PricePoint
-  lowest?: PricePoint
+  last?: T
+  lowest?: T
   average?: number
 }
 
-export function summariseHistory(scans: PricePoint[]): PriceHistory {
+export function summariseHistory<T extends PricePoint>(scans: T[]): PriceHistory<T> {
   if (!scans.length) return { count: 0 }
   const byTime = [...scans].sort((a, b) => a.timestamp - b.timestamp)
   // On a tie, the earliest time you saw the lowest price.
