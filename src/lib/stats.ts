@@ -19,6 +19,62 @@ export function summariseHistory<T extends PricePoint>(scans: T[]): PriceHistory
   return { count: scans.length, last: byTime[byTime.length - 1], lowest, average }
 }
 
+// ---- Product dashboard ----
+
+type ShopPricePoint = PricePoint & { shopId?: number }
+
+export type ProductSummary<T extends PricePoint> = {
+  count: number
+  first: T
+  latest: T
+  lowest: T
+  highest: T
+  average: number
+  // Latest price compared with the first one you logged.
+  change: { euros: number; percent: number }
+}
+
+export function summariseProduct<T extends PricePoint>(scans: T[]): ProductSummary<T> | undefined {
+  if (!scans.length) return undefined
+  const byTime = [...scans].sort((a, b) => a.timestamp - b.timestamp)
+  const history = summariseHistory(byTime)
+  const first = byTime[0]
+  const latest = byTime[byTime.length - 1]
+  return {
+    count: scans.length,
+    first,
+    latest,
+    lowest: history.lowest!,
+    highest: byTime.reduce((high, s) => (s.price > high.price ? s : high)),
+    average: history.average!,
+    change: priceDifference(latest.price, first.price),
+  }
+}
+
+export type ShopBreakdown<T> = { shopId?: number; latest: T; lowest: number; average: number; count: number }
+
+// Per-shop stats, cheapest on average first. Scans without a shop are grouped together.
+export function breakdownByShop<T extends ShopPricePoint>(scans: T[]): ShopBreakdown<T>[] {
+  const groups = new Map<number | undefined, T[]>()
+  for (const scan of scans) groups.set(scan.shopId, [...(groups.get(scan.shopId) ?? []), scan])
+  return [...groups.entries()]
+    .map(([shopId, group]) => {
+      const history = summariseHistory(group)
+      return { shopId, latest: history.last!, lowest: history.lowest!.price, average: history.average!, count: group.length }
+    })
+    .sort((a, b) => a.average - b.average)
+}
+
+// Shops in the order you first scanned this product there. Chart colours follow this order,
+// so a shop keeps its colour as you add scans.
+export function shopsInFirstSeenOrder(scans: ShopPricePoint[]): (number | undefined)[] {
+  const order: (number | undefined)[] = []
+  for (const scan of [...scans].sort((a, b) => a.timestamp - b.timestamp)) {
+    if (!order.includes(scan.shopId)) order.push(scan.shopId)
+  }
+  return order
+}
+
 // How the current price compares with an earlier one: positive means you'd pay more now.
 export function priceDifference(current: number, reference: number): { euros: number; percent: number } {
   return {

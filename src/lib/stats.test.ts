@@ -1,5 +1,46 @@
 import { describe, expect, it } from 'vitest'
-import { isAboveUsual, priceDifference, summariseHistory } from './stats'
+import { breakdownByShop, isAboveUsual, priceDifference, shopsInFirstSeenOrder, summariseHistory, summariseProduct } from './stats'
+
+const scans = [
+  { price: 2.89, timestamp: 100, shopId: 1 },
+  { price: 3.15, timestamp: 400, shopId: 2 },
+  { price: 2.99, timestamp: 200, shopId: 2 },
+  { price: 3.05, timestamp: 300, shopId: 1 },
+  { price: 3.49, timestamp: 250 },
+]
+
+describe('summariseProduct', () => {
+  it('is undefined with no scans', () => {
+    expect(summariseProduct([])).toBeUndefined()
+  })
+
+  it('gives the dashboard numbers', () => {
+    const summary = summariseProduct(scans)!
+    expect(summary.count).toBe(5)
+    expect(summary.first.timestamp).toBe(100)
+    expect(summary.latest.price).toBe(3.15)
+    expect(summary.lowest.price).toBe(2.89)
+    expect(summary.highest.price).toBe(3.49)
+    expect(summary.average).toBe(3.11)
+    expect(summary.change).toEqual({ euros: 0.26, percent: 9 })
+  })
+})
+
+describe('breakdownByShop', () => {
+  it('groups by shop, cheapest average first', () => {
+    const rows = breakdownByShop(scans)
+    expect(rows.map((r) => r.shopId)).toEqual([1, 2, undefined])
+    expect(rows[0]).toMatchObject({ lowest: 2.89, average: 2.97, count: 2, latest: { price: 3.05 } })
+    expect(rows[1]).toMatchObject({ lowest: 2.99, average: 3.07, count: 2, latest: { price: 3.15 } })
+    expect(rows[2]).toMatchObject({ count: 1, average: 3.49 })
+  })
+})
+
+describe('shopsInFirstSeenOrder', () => {
+  it('lists shops by first scan, including no shop', () => {
+    expect(shopsInFirstSeenOrder(scans)).toEqual([1, 2, undefined])
+  })
+})
 
 describe('summariseHistory', () => {
   it('is empty with no scans', () => {

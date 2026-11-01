@@ -790,6 +790,192 @@ button {
   margin-top: 8px;
 }
 
+/* Product page */
+
+.product-page > section {
+  margin-top: 16px;
+}
+
+.card-heading {
+  margin: 0 0 12px;
+  font-size: 1.05rem;
+}
+
+.hero-label {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.hero-price {
+  margin: 0;
+  font-size: 2.6rem;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.stat {
+  padding: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.stat p {
+  margin: 0;
+}
+
+.stat-label {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.stat-value {
+  font-size: 1.2rem;
+  font-weight: 750;
+}
+
+.stat-note {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.chart-box {
+  position: relative;
+  height: 220px;
+}
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.chart-legend button {
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg);
+  color: inherit;
+  font-size: 0.85rem;
+}
+
+.chart-legend button.off {
+  opacity: 0.45;
+  text-decoration: line-through;
+}
+
+.legend-swatch {
+  flex: none;
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 6px;
+  border-radius: 50%;
+}
+
+.chart-legend .legend-swatch {
+  margin-right: 0;
+}
+
+.shop-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.shop-table th,
+.shop-table td {
+  padding: 8px 4px;
+  border-top: 1px solid var(--border);
+  text-align: right;
+}
+
+.shop-table thead th {
+  border-top: none;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.shop-table th:first-child {
+  text-align: left;
+  font-weight: 600;
+}
+
+.history-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.history-list li + li {
+  border-top: 1px solid var(--border);
+}
+
+.history-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 12px;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.history-when {
+  font-weight: 600;
+}
+
+.history-price {
+  text-align: right;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.delete-button {
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--danger);
+  font-size: 0.85rem;
+}
+
+.delete-confirm {
+  margin-bottom: 10px;
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--bg);
+}
+
+.delete-confirm p {
+  margin: 0 0 10px;
+}
+
+.delete-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.danger-button {
+  border: none;
+  border-radius: 12px;
+  background: var(--danger);
+  color: #ffffff;
+  font-weight: 700;
+}
+
 /* Photo test page */
 
 .file-button {

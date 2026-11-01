@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { db, type Product } from './lib/db'
 import { BarcodeScan } from './screens/BarcodeScan'
 import { Home } from './screens/Home'
 import { OcrTest } from './screens/OcrTest'
 import { PriceScan } from './screens/PriceScan'
-import { ProductDetail } from './screens/ProductDetail'
+
+// Loaded when first opened, so the chart library doesn't slow down starting the app.
+const ProductDetail = lazy(() => import('./screens/ProductDetail').then((m) => ({ default: m.ProductDetail })))
 
 export type Screen =
   | { name: 'home' }
@@ -39,7 +41,11 @@ function App() {
         />
       )
     case 'product':
-      return <ProductDetail barcode={screen.barcode} onBack={() => history.back()} />
+      return (
+        <Suspense fallback={null}>
+          <ProductDetail barcode={screen.barcode} onBack={() => history.back()} />
+        </Suspense>
+      )
     case 'barcode':
       return (
         <BarcodeScan
