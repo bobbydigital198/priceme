@@ -59,6 +59,21 @@ button {
 
 .home-header {
   margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.settings-button {
+  flex: none;
+  width: var(--tap);
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--text);
 }
 
 .app-title {
@@ -974,6 +989,75 @@ button {
   background: var(--danger);
   color: #ffffff;
   font-weight: 700;
+}
+
+/* Settings */
+
+.settings > .card {
+  margin-top: 16px;
+}
+
+.settings .button-row .file-button {
+  margin-top: 0;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.settings-message {
+  margin-top: 12px;
+  color: var(--good);
+  font-weight: 600;
+}
+
+.settings-shops {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.settings-shops li + li {
+  border-top: 1px solid var(--border);
+}
+
+.settings-shop-row {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font-weight: 600;
+  text-align: left;
+}
+
+.shop-editor {
+  padding: 4px 0 16px;
+}
+
+.field select {
+  min-height: var(--tap);
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+}
+
+.danger-text {
+  color: var(--danger);
+}
+
+.danger-zone {
+  border-color: var(--danger);
+}
+
+.danger-button:disabled {
+  opacity: 0.4;
 }
 
 /* Photo test page */
