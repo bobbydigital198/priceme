@@ -542,6 +542,164 @@ button {
   transition: width 0.2s;
 }
 
+/* Price confirmation */
+
+.confirm-prices {
+  display: grid;
+  grid-template-columns: 1fr minmax(110px, 38%);
+  gap: 12px;
+  align-items: start;
+}
+
+.price-field,
+.unit-field {
+  display: grid;
+  gap: 4px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.price-input-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  color: var(--text);
+  font-size: 2.2rem;
+  font-weight: 800;
+}
+
+.price-input-wrap input,
+.unit-field input {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+}
+
+.price-input-wrap input {
+  min-height: 72px;
+  padding: 0 12px;
+  font-size: 2.6rem;
+  font-weight: 800;
+}
+
+.price-input-wrap input[aria-invalid='true'] {
+  border-color: var(--danger);
+}
+
+.unit-field input {
+  min-height: var(--tap);
+  padding: 0 10px;
+  font-size: 1.1rem;
+  text-align: right;
+}
+
+.unit-field .calc-tag {
+  margin-left: 6px;
+}
+
+.basis-toggle {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.basis-toggle button,
+.chip {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg);
+  color: inherit;
+  font-weight: 600;
+}
+
+.basis-toggle button.selected {
+  background: var(--accent);
+  color: var(--accent-text);
+  border-color: var(--accent);
+}
+
+.suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.suggestions .product-sub {
+  margin: 0;
+}
+
+.confidence-medium {
+  color: var(--text-muted);
+}
+
+.comparison-heading {
+  margin: 20px 0 8px;
+  font-size: 1rem;
+}
+
+.comparison table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.comparison th,
+.comparison td {
+  padding: 8px 0;
+  border-top: 1px solid var(--border);
+  text-align: right;
+  vertical-align: top;
+}
+
+.comparison th {
+  text-align: left;
+  font-weight: 600;
+}
+
+.comparison th span {
+  display: block;
+  font-weight: 400;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.comparison td + td {
+  padding-left: 12px;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.diff-up {
+  color: var(--danger);
+}
+
+.diff-down {
+  color: var(--good);
+}
+
+.price-warning {
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--danger);
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.camera-bottom .camera-button {
+  margin-top: 4px;
+}
+
 /* Photo test page */
 
 .file-button {

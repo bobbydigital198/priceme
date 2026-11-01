@@ -53,7 +53,17 @@ function App() {
         />
       )
     case 'price':
-      return <PriceScan product={screen.product} onCancel={() => history.back()} onDone={() => history.back()} />
+      return (
+        <PriceScan
+          product={screen.product}
+          onCancel={() => history.back()}
+          onSave={async (scan) => {
+            await db.scans.add(scan)
+            // Back to home, where the new scan is at the top of the list.
+            history.back()
+          }}
+        />
+      )
     case 'ocr-test':
       return <OcrTest onBack={() => history.back()} />
   }

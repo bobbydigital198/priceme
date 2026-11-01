@@ -49,11 +49,30 @@ export const db = new Dexie('priceme') as Dexie & {
   shops: EntityTable<Shop, 'id'>
 }
 
-db.version(1).stores({
+const SCHEMA = {
   products: 'barcode',
   scans: '++id, barcode, timestamp, shopId, [barcode+timestamp]',
   shops: '++id, osmId, lastUsed',
-})
+}
+
+db.version(1).stores(SCHEMA)
+
+// Version 2 removes the made-up test scans from stage 2 (barcodes starting "SAMPLE-"),
+// in case any are still on the phone. Runs once.
+db.version(2)
+  .stores(SCHEMA)
+  .upgrade(async (tx) => {
+    const isSample = (barcode: string) => barcode.startsWith('SAMPLE-')
+    const scans = tx.table<Scan, number>('scans')
+    const sampleScans = await scans.filter((s) => isSample(s.barcode)).toArray()
+    const sampleShopIds = new Set(sampleScans.flatMap((s) => (s.shopId === undefined ? [] : [s.shopId])))
+
+    await scans.bulkDelete(sampleScans.map((s) => s.id!))
+    await tx.table<Product, string>('products').filter((p) => isSample(p.barcode)).delete()
+    for (const id of sampleShopIds) {
+      if ((await scans.where('shopId').equals(id).count()) === 0) await tx.table('shops').delete(id)
+    }
+  })
 
 // Asks the browser not to clear our data when the phone is low on space.
 export async function requestPersistentStorage() {

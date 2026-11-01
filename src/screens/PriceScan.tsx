@@ -1,25 +1,25 @@
 import { useEffect, useRef, useState } from 'react'
 import { ReadingProgress } from '../components/ReadingProgress'
-import { ReadingResult } from '../components/ReadingResult'
 import { TagIcon } from '../components/TagIcon'
 import { frameToVideoCrop } from '../lib/crop'
-import type { Product } from '../lib/db'
+import type { Product, Scan } from '../lib/db'
 import { cropToCanvas } from '../lib/imageProcessing'
 import { getOcrWorker, readPriceTag, type TagReading } from '../lib/ocr'
 import { useRearCamera } from '../lib/useRearCamera'
+import { ConfirmPrice } from './ConfirmPrice'
 
-type Props = { product: Product; onCancel: () => void; onDone: () => void }
+type Props = { product: Product; onCancel: () => void; onSave: (scan: Scan) => void }
 
 type Step =
   | { kind: 'camera' }
   | { kind: 'camera-error'; message: string }
   | { kind: 'reading'; progress: number }
-  | { kind: 'result'; reading: TagReading }
-  | { kind: 'failed' }
+  // No reading means the price is typed by hand.
+  | { kind: 'confirm'; reading?: TagReading }
 
 const STEP_LABEL = 'Step 2 of 2: scan the price tag'
 
-export function PriceScan({ product, onCancel, onDone }: Props) {
+export function PriceScan({ product, onCancel, onSave }: Props) {
   const [step, setStep] = useState<Step>({ kind: 'camera' })
 
   useEffect(() => {
@@ -31,14 +31,34 @@ export function PriceScan({ product, onCancel, onDone }: Props) {
     setStep({ kind: 'reading', progress: 0 })
     try {
       const reading = await readPriceTag(tag, (progress) => setStep({ kind: 'reading', progress }))
-      setStep({ kind: 'result', reading })
+      setStep({ kind: 'confirm', reading })
     } catch {
-      setStep({ kind: 'failed' })
+      // The reader failed to start; typing the price still works.
+      setStep({ kind: 'confirm' })
     }
   }
 
   if (step.kind === 'camera') {
-    return <TagCamera onCancel={onCancel} onCapture={read} onError={(message) => setStep({ kind: 'camera-error', message })} />
+    return (
+      <TagCamera
+        onCancel={onCancel}
+        onCapture={read}
+        onManual={() => setStep({ kind: 'confirm' })}
+        onError={(message) => setStep({ kind: 'camera-error', message })}
+      />
+    )
+  }
+
+  if (step.kind === 'confirm') {
+    return (
+      <ConfirmPrice
+        product={product}
+        reading={step.reading}
+        onSave={onSave}
+        onRetake={() => setStep({ kind: 'camera' })}
+        onCancel={onCancel}
+      />
+    )
   }
 
   return (
@@ -59,45 +79,26 @@ export function PriceScan({ product, onCancel, onDone }: Props) {
             <button type="button" className="primary-button" onClick={() => setStep({ kind: 'camera' })}>
               Try again
             </button>
+            <button type="button" className="secondary-button" onClick={() => setStep({ kind: 'confirm' })}>
+              Enter manually
+            </button>
           </div>
         </section>
       )}
 
       {step.kind === 'reading' && <ReadingProgress progress={step.progress} />}
-
-      {step.kind === 'failed' && (
-        <section className="card">
-          <h2>The price reader didn't start</h2>
-          <p>Close PriceMe completely and open it again. If it keeps happening, let me know.</p>
-          <div className="button-row">
-            <button type="button" className="primary-button" onClick={() => setStep({ kind: 'camera' })}>
-              Retake photo
-            </button>
-          </div>
-        </section>
-      )}
-
-      {step.kind === 'result' && (
-        <>
-          <ReadingResult reading={step.reading} product={product} />
-          <p className="placeholder-note">Editing and saving the price arrive in stage 5.</p>
-          <div className="button-row">
-            <button type="button" className="primary-button" onClick={() => setStep({ kind: 'camera' })}>
-              Retake photo
-            </button>
-            <button type="button" className="secondary-button" onClick={onDone}>
-              Back to home
-            </button>
-          </div>
-        </>
-      )}
     </main>
   )
 }
 
-type CameraProps = { onCancel: () => void; onCapture: (tag: HTMLCanvasElement) => void; onError: (message: string) => void }
+type CameraProps = {
+  onCancel: () => void
+  onCapture: (tag: HTMLCanvasElement) => void
+  onManual: () => void
+  onError: (message: string) => void
+}
 
-function TagCamera({ onCancel, onCapture, onError }: CameraProps) {
+function TagCamera({ onCancel, onCapture, onManual, onError }: CameraProps) {
   const { videoRef, ready } = useRearCamera(onError)
   const frameRef = useRef<HTMLDivElement>(null)
 
@@ -130,6 +131,9 @@ function TagCamera({ onCancel, onCapture, onError }: CameraProps) {
         <div className="camera-bottom">
           <p className="camera-hint">Fill the frame with the tag and hold steady.</p>
           <button type="button" className="shutter" onClick={capture} disabled={!ready} aria-label="Take photo" />
+          <button type="button" className="camera-button" onClick={onManual}>
+            Enter manually
+          </button>
         </div>
       </div>
     </main>

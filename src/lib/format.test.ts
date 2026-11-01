@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest'
-import { formatPrice, formatScanCount, formatScanTime, formatShop, formatUnitPrice } from './format'
+import {
+  formatAmountInput,
+  formatDifference,
+  formatPrice,
+  formatScanCount,
+  formatScanDay,
+  formatScanTime,
+  formatShop,
+  formatUnitPrice,
+  parseAmountInput,
+} from './format'
 
 const nbsp = ' '
 
@@ -38,6 +48,46 @@ describe('formatScanTime', () => {
   it('treats just after midnight as yesterday, not today', () => {
     const justAfterMidnight = new Date(2026, 10, 1, 0, 10).getTime()
     expect(formatScanTime(new Date(2026, 9, 31, 23, 50).getTime(), justAfterMidnight)).toBe('Yesterday, 23:50')
+  })
+})
+
+describe('formatScanDay', () => {
+  const now = new Date(2026, 9, 31, 18, 0).getTime()
+
+  it('names recent days and dates older ones', () => {
+    expect(formatScanDay(new Date(2026, 9, 31, 9, 0).getTime(), now)).toBe('today')
+    expect(formatScanDay(new Date(2026, 9, 30, 9, 0).getTime(), now)).toBe('yesterday')
+    expect(formatScanDay(new Date(2026, 9, 12, 9, 0).getTime(), now)).toBe('12 Oct')
+    expect(formatScanDay(new Date(2025, 9, 12, 9, 0).getTime(), now)).toBe('12 Oct 2025')
+  })
+})
+
+describe('formatDifference', () => {
+  it('shows a sign on euros and percent', () => {
+    expect(formatDifference({ euros: 0.45, percent: 15 })).toBe(`+0,45${nbsp}€ (+15%)`)
+    expect(formatDifference({ euros: -0.3, percent: -10 })).toBe(`-0,30${nbsp}€ (-10%)`)
+    expect(formatDifference({ euros: 0, percent: 0 })).toBe('Same price')
+  })
+})
+
+describe('typed amounts', () => {
+  it('formats for a price box', () => {
+    expect(formatAmountInput(3.4)).toBe('3,40')
+  })
+
+  it.each([
+    ['3,49', 3.49],
+    ['3.49', 3.49],
+    ['3,49 €', 3.49],
+    [' 12 ', 12],
+    ['3,', 3],
+    ['0,5', 0.5],
+  ])('reads %j', (text, value) => {
+    expect(parseAmountInput(text)).toBe(value)
+  })
+
+  it.each(['', '0', '0,00', 'abc', '3,499', '3,4,9', '-2'])('rejects %j', (text) => {
+    expect(parseAmountInput(text)).toBeUndefined()
   })
 })
 

@@ -2,13 +2,11 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { ScanIcon } from '../components/ScanIcon'
 import { ScanRow } from '../components/ScanRow'
 import { getRecentScans } from '../lib/queries'
-import { addSampleData, isSampleBarcode, removeSampleData } from '../lib/sampleData'
 
 type Props = { onStartScan: () => void; onOpenProduct: (barcode: string) => void; onOpenOcrTest: () => void }
 
 export function Home({ onStartScan, onOpenProduct, onOpenOcrTest }: Props) {
   const recent = useLiveQuery(() => getRecentScans())
-  const hasSamples = recent?.some((r) => isSampleBarcode(r.scan.barcode)) ?? false
 
   return (
     <main className="screen home">
@@ -24,9 +22,6 @@ export function Home({ onStartScan, onOpenProduct, onOpenOcrTest }: Props) {
             Tap the button at the bottom right, scan a product's barcode, then photograph its shelf
             price tag. Every price you log appears here, newest first.
           </p>
-          <button type="button" className="text-button" onClick={addSampleData}>
-            Add sample scans (for testing)
-          </button>
         </section>
       )}
 
@@ -38,11 +33,6 @@ export function Home({ onStartScan, onOpenProduct, onOpenOcrTest }: Props) {
               <ScanRow key={item.scan.id} item={item} onOpen={onOpenProduct} />
             ))}
           </ul>
-          {hasSamples && (
-            <button type="button" className="text-button" onClick={removeSampleData}>
-              Remove sample scans
-            </button>
-          )}
         </>
       )}
 
