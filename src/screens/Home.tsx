@@ -51,6 +51,8 @@ export function Home({ onStartScan, onOpenProduct, onOpenOcrTest }: Props) {
         Test the price reader with a photo
       </button>
 
+      <p className="app-version">Version {__APP_VERSION__}</p>
+
       <button type="button" className="fab" onClick={onStartScan} aria-label="Scan a product">
         <ScanIcon size={30} />
       </button>

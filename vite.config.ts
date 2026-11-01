@@ -1,11 +1,22 @@
 /// <reference types="vitest/config" />
 import react from '@vitejs/plugin-react'
+import { execSync } from 'node:child_process'
+import { readFileSync } from 'node:fs'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
+
+// App version 1.x.y: x is the build stage, set in package.json ("1.4.0" = stage 4);
+// y counts the updates published so far, taken from the number of saved commits.
+const [major, stage] = (JSON.parse(readFileSync('package.json', 'utf8')) as { version: string }).version.split('.')
+const updates = execSync('git rev-list --count HEAD').toString().trim()
+const appVersion = `${major}.${stage}.${updates}`
 
 // The app is served from https://bobbydigital198.github.io/priceme/
 export default defineConfig({
   base: '/priceme/',
+  define: {
+    __APP_VERSION__: JSON.stringify(appVersion),
+  },
   plugins: [
     react(),
     VitePWA({
