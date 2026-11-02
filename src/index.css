@@ -1,6 +1,7 @@
-/* PrixIt colours: brand blue #2e3093 and yellow #fdee22.
+/* PrixIt colours: brand blue #2e3093 with white.
    --brand fills the main actions (white text on it); --brand-ink colours titles and icons;
-   --accent (yellow) marks highlights and selections, with blue text on it. */
+   --accent marks highlights and selections: blue with white text in light mode,
+   white with blue text in dark mode. */
 :root {
   --bg: #f4f5fa;
   --surface: #ffffff;
@@ -10,8 +11,8 @@
   --brand: #2e3093;
   --on-brand: #ffffff;
   --brand-ink: #2e3093;
-  --accent: #fdee22;
-  --accent-text: #2e3093;
+  --accent: #2e3093;
+  --accent-text: #ffffff;
   --danger: #c4161c;
   --good: #1a7f37;
   --radius: 14px;
@@ -31,9 +32,11 @@
     --text: #f4f4f2;
     --text-muted: #a9aabb;
     --border: #2f3146;
-    /* A little lighter so blue buttons stand out on the dark background; titles turn yellow. */
+    /* A little lighter so blue buttons stand out on the dark background; titles and highlights turn white. */
     --brand: #3a3db8;
-    --brand-ink: #fdee22;
+    --brand-ink: #ffffff;
+    --accent: #ffffff;
+    --accent-text: #2e3093;
     --danger: #ff6b6b;
     --good: #4cc26a;
   }
@@ -1411,7 +1414,7 @@ button {
   border: none;
   border-radius: 999px;
   background: var(--brand);
-  color: var(--accent);
+  color: var(--on-brand);
   font-size: 1.15rem;
   font-weight: 800;
   letter-spacing: 0.01em;
