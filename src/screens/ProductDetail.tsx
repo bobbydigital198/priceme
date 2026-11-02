@@ -1,6 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useState } from 'react'
 import { PriceChart, type ChartSeries } from '../components/PriceChart'
+import { OffCredit } from '../components/Credits'
 import { ProductThumb } from '../components/ProductThumb'
 import { CATEGORIES, categorise, type CategoryId } from '../lib/categories'
 import { shopColour, useDarkMode } from '../lib/chartColours'
@@ -70,6 +71,7 @@ export function ProductDetail({ barcode, onBack }: Props) {
           {product?.brand && <p className="product-sub">{product.brand}</p>}
           {product?.quantityText && <p className="product-sub">{product.quantityText}</p>}
           <p className="product-sub small">Barcode {barcode}</p>
+          {product?.source === 'openfoodfacts' && <OffCredit />}
         </div>
       </section>
 

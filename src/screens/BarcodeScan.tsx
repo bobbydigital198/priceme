@@ -1,6 +1,7 @@
 import { useRef, useState, type FormEvent } from 'react'
 import { BarcodeCamera } from '../components/BarcodeCamera'
 import { BarcodeIcon } from '../components/BarcodeIcon'
+import { OffCredit } from '../components/Credits'
 import { ProductThumb } from '../components/ProductThumb'
 import { normaliseBarcode } from '../lib/barcode'
 import { CATEGORIES, categorise, type CategoryId } from '../lib/categories'
@@ -119,6 +120,7 @@ export function BarcodeScan({ onCancel, onConfirm }: Props) {
               {step.product.brand && <p className="product-sub">{step.product.brand}</p>}
               {step.product.quantityText && <p className="product-sub">{step.product.quantityText}</p>}
               <p className="product-sub small">Barcode {step.product.barcode}</p>
+              {step.product.source === 'openfoodfacts' && <OffCredit />}
             </div>
           </div>
           <div className="button-row">

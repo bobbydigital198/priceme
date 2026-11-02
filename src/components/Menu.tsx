@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-export type Section = 'scans' | 'shops' | 'products'
+export type Section = 'scans' | 'shops' | 'products' | 'about'
 
 const SECTIONS: { id: Section; label: string }[] = [
   { id: 'scans', label: 'Scans' },
@@ -56,6 +56,16 @@ export function MenuDrawer({ current, onNavigate, onOpenSettings, onClose }: Pro
           <li>
             <button type="button" onClick={() => (onClose(), onOpenSettings())}>
               Settings
+            </button>
+          </li>
+          <li>
+            <button
+              type="button"
+              className={current === 'about' ? 'current' : ''}
+              aria-current={current === 'about' ? 'page' : undefined}
+              onClick={() => (onClose(), onNavigate('about'))}
+            >
+              About
             </button>
           </li>
         </ul>

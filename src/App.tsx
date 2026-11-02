@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { MenuDrawer, type Section } from './components/Menu'
 import { db, type Product } from './lib/db'
+import { About } from './screens/About'
 import { BarcodeScan } from './screens/BarcodeScan'
 import { Home } from './screens/Home'
 import { OcrTest } from './screens/OcrTest'
@@ -18,6 +19,7 @@ export type Screen =
   | { name: 'shops' }
   | { name: 'shop'; shopId: number }
   | { name: 'products' }
+  | { name: 'about' }
   | { name: 'product'; barcode: string }
   | { name: 'barcode' }
   | { name: 'price'; product: Product }
@@ -71,7 +73,8 @@ function App() {
     else replaceScreen(next)
   }
 
-  const currentSection: Section = screen.name === 'shops' ? 'shops' : screen.name === 'products' ? 'products' : 'scans'
+  const currentSection: Section =
+    screen.name === 'shops' || screen.name === 'products' || screen.name === 'about' ? screen.name : 'scans'
   const menu = menuOpen && (
     <MenuDrawer
       current={currentSection}
@@ -96,6 +99,13 @@ function App() {
         <>
           {menu}
           <Shops onOpenMenu={openMenu} onOpenShop={(shopId) => openScreen({ name: 'shop', shopId })} />
+        </>
+      )
+    case 'about':
+      return (
+        <>
+          {menu}
+          <About onOpenMenu={openMenu} />
         </>
       )
     case 'shop':

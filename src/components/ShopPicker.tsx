@@ -2,6 +2,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { useState, type FormEvent } from 'react'
 import { db } from '../lib/db'
 import { formatShop } from '../lib/format'
+import { OsmCredit } from './Credits'
 import { CHAINS, fetchNearbyShops, getPosition, saveShop, type NearbyShop } from '../lib/shops'
 
 type Props = {
@@ -135,6 +136,7 @@ export function ShopPicker({ title = 'Which shop?', showSaved = true, currentId,
           {nearby.status === 'error' && <p className="field-error">{nearby.message}</p>}
           {nearby.status === 'done' && nearby.shops.length === 0 && <p>No shops found within 150 m. Add yours above.</p>}
           {nearby.status === 'done' && nearby.shops.length > 0 && (
+            <>
             <ul className="shop-list">
               {nearby.shops.map((shop) => (
                 <li key={shop.osmId}>
@@ -147,6 +149,8 @@ export function ShopPicker({ title = 'Which shop?', showSaved = true, currentId,
                 </li>
               ))}
             </ul>
+            <OsmCredit />
+            </>
           )}
         </section>
       </main>

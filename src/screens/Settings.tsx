@@ -1,7 +1,8 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useState } from 'react'
 import { parseBackup, type Backup } from '../lib/backup'
-import { deleteAllData, downloadFile, exportBackup, restoreBackup } from '../lib/dataAdmin'
+import { canShareFiles, deleteAllData, downloadFile, exportBackup, restoreBackup, shareFile } from '../lib/dataAdmin'
+import { isIos } from '../lib/platform'
 import { db } from '../lib/db'
 import { formatScanDay } from '../lib/format'
 
@@ -47,10 +48,27 @@ function BackupSection({ scanCount }: { scanCount: number }) {
   const [message, setMessage] = useState<{ text: string; error?: boolean }>()
   const [pending, setPending] = useState<{ backup: Backup; fileName: string }>()
 
+  const contents = (counts: { scans: number; products: number; shops: number }) =>
+    `${count(counts.scans, 'scan')}, ${count(counts.products, 'product')} and ${count(counts.shops, 'shop')}`
+
   async function exportNow() {
     const { fileName, json, counts } = await exportBackup()
     downloadFile(fileName, json)
-    setMessage({ text: `Saved ${fileName} to your Downloads, with ${count(counts.scans, 'scan')}, ${count(counts.products, 'product')} and ${count(counts.shops, 'shop')}.` })
+    setMessage({
+      text: `Saved ${fileName}, with ${contents(counts)}. Look for it in ${isIos() ? 'the Files app, under Downloads' : 'your Downloads'}.`,
+    })
+  }
+
+  // Opens the phone's share sheet, to save the backup to Files, Google Drive, email and so on.
+  async function shareNow() {
+    const { fileName, json, counts } = await exportBackup()
+    try {
+      await shareFile(fileName, json)
+      setMessage({ text: `Shared ${fileName}, with ${contents(counts)}.` })
+    } catch (error) {
+      // Closing the share sheet without choosing anything isn't an error.
+      if (!(error instanceof DOMException && error.name === 'AbortError')) setMessage({ text: "Couldn't share the backup. Try Save a backup instead.", error: true })
+    }
   }
 
   async function chooseFile(file: File | undefined) {
@@ -72,13 +90,19 @@ function BackupSection({ scanCount }: { scanCount: number }) {
     <section className="card">
       <h2 className="card-heading">Backup</h2>
       <p className="product-sub">
-        Your scans are only stored on this phone. Clearing Chrome's data or uninstalling Chrome would erase them, so save a
-        backup now and then and keep a copy somewhere safe, such as Google Drive or an email to yourself.
+        Your scans are only stored on this phone, inside the app. Deleting the app or clearing your browser's website data
+        would erase them, so save a backup now and then and keep a copy somewhere safe, such as{' '}
+        {isIos() ? 'iCloud Drive' : 'Google Drive'} or an email to yourself.
       </p>
       <div className="button-row">
         <button type="button" className="primary-button" onClick={exportNow}>
           Save a backup
         </button>
+        {canShareFiles() && (
+          <button type="button" className="secondary-button" onClick={shareNow}>
+            Share a backup
+          </button>
+        )}
         <label className="secondary-button file-button">
           Restore from a backup
           <input

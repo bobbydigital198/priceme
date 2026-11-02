@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
+import { isIos } from './platform'
 
 function cameraErrorMessage(error: unknown): string {
   const name = error instanceof DOMException ? error.name : ''
   if (name === 'NotAllowedError') {
-    return 'PrixIt needs the camera to scan barcodes and price tags. If you blocked it before, open Chrome, go to Settings, then Site settings, then Camera, and allow it for bobbydigital198.github.io.'
+    return isIos()
+      ? 'PrixIt needs the camera to scan barcodes and price tags. If you blocked it, open the Settings app, tap Apps, then Safari (or the browser you installed PrixIt from), then Camera, and choose Ask or Allow. Then close PrixIt and open it again.'
+      : 'PrixIt needs the camera to scan barcodes and price tags. If you blocked it before, open Chrome, go to Settings, then Site settings, then Camera, and allow it for bobbydigital198.github.io.'
   }
   if (name === 'NotFoundError') return 'No camera was found on this device.'
   if (name === 'NotReadableError') return 'The camera is busy. Close any other app using it and try again.'

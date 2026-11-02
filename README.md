@@ -22,13 +22,22 @@ Everything runs on your phone. There are no accounts and no server, and it's fre
 
 ## Installing on your phone
 
-PrixIt is a web app that installs like a normal app. On your Samsung Galaxy S24:
+PrixIt is a web app that installs like a normal app. The home screen shows install steps for your phone when you open the link in a browser, and **About** in the menu has them too, with a button to send the link to someone.
 
-1. Open **Chrome** and go to https://bobbydigital198.github.io/priceme/
-2. Tap the **⋮** menu (top right), then **Add to home screen**, then **Install**.
-3. Open **PrixIt** from your home screen. It opens full screen, without Chrome's address bar.
+**Android (Chrome):**
 
-The first time you open it, it downloads about 16 MB (mostly the price reader), so do this on wifi. After that it works offline, apart from looking up new products.
+1. Open https://bobbydigital198.github.io/priceme/ in **Chrome**.
+2. Tap **Install PrixIt** if it appears, or the **⋮** menu (top right), then **Add to home screen**, then **Install**.
+3. Open **PrixIt** from your home screen.
+
+**iPhone (Safari, or Chrome on iOS 16.4 or later):**
+
+1. Open https://bobbydigital198.github.io/priceme/ in **Safari**.
+2. Tap the **Share** button (the square with an arrow pointing up).
+3. Scroll down, tap **Add to Home Screen**, then **Add**.
+4. Open **PrixIt** from your home screen, not from Safari. Its data is kept separately from Safari's.
+
+The first time you open it, it downloads about 16 MB (mostly the price reader), so do this on wifi. After that it works offline, apart from looking up new products. Each person's data stays on their own phone.
 
 ### Getting updates
 
@@ -54,11 +63,15 @@ Your scans are stored **only on your phone**, inside Chrome. If you clear Chrome
 
 1. Open **Settings** and tap **Save a backup**.
 2. A file called something like `prixit-backup-2026-11-01.json` is saved to your phone's **Downloads** folder.
-3. Keep a copy somewhere other than your phone. For example, open the **Files** app, long-press the file, tap **Share** and choose **Drive**, or email it to yourself.
+3. On an iPhone it goes to the **Files** app, under Downloads. **Share a backup** (on phones that support it) opens the share sheet instead, to save straight to iCloud Drive, Google Drive or an email.
+4. Keep a copy somewhere other than your phone. For example, open the **Files** app, long-press the file, tap **Share** and choose **Drive**, or email it to yourself.
 
 **To restore** (for example on a new phone): install PrixIt, open **Settings**, tap **Restore from a backup** and choose the file. PrixIt shows what the backup contains before doing anything. Restoring **replaces** everything currently in the app.
 
 ## What leaves your phone
+
+The full privacy notice and data-licence credits are in the app under **☰ → About**. In short:
+
 
 - **Barcode lookups** go to [Open Food Facts](https://world.openfoodfacts.org), a free, open product database, to get the product's name, brand, pack size, category and photo. If it doesn't know a barcode (usually non-food, like toilet paper or soap), the barcode is tried at its sister databases [Open Beauty Facts](https://world.openbeautyfacts.org) and [Open Products Facts](https://world.openproductsfacts.org), run by the same non-profit. Products are then remembered, so repeat scans don't go online.
 - **Your location** is only used if you tap **Use my location** in the shop list. Your approximate position is then sent to OpenStreetMap's Overpass service to find shops within 150 m, and nowhere else. It isn't saved.
@@ -114,7 +127,7 @@ If your phone shows a lower number than the latest update, it hasn't picked up t
 
 ## Troubleshooting
 
-**The camera doesn't open.** Chrome has blocked it. Open Chrome, go to **Settings → Site settings → Camera**, and allow it for bobbydigital198.github.io.
+**The camera doesn't open.** On Android, open Chrome, go to **Settings → Site settings → Camera**, and allow it for bobbydigital198.github.io. On iPhone, open the **Settings** app, tap **Apps → Safari → Camera**, choose **Ask** or **Allow**, then close and reopen PrixIt.
 
 **A price tag isn't read correctly.** Fill the frame with the tag, hold steady and avoid glare. You can always correct the price or tap **Enter manually**. To help improve the reader, save the photo and test it with **Settings → Test with a photo**.
 

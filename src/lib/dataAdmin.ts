@@ -1,6 +1,7 @@
 // Settings actions that change stored data: backup, restore, delete all, and shop tidying.
 import { backupFileName, makeBackup, type Backup } from './backup'
 import { db, type Shop } from './db'
+import { clearNearbyCache } from './shops'
 
 export async function exportBackup(): Promise<{ fileName: string; json: string; counts: { scans: number; products: number; shops: number } }> {
   const [products, scans, shops] = await Promise.all([db.products.toArray(), db.scans.toArray(), db.shops.toArray()])
@@ -8,7 +9,22 @@ export async function exportBackup(): Promise<{ fileName: string; json: string; 
   return { fileName: backupFileName(), json: JSON.stringify(backup), counts: { scans: scans.length, products: products.length, shops: shops.length } }
 }
 
-// Saves a text file to the phone's Downloads (Chrome shows a download notification).
+const backupFile = (fileName: string, text: string) => new File([text], fileName, { type: 'application/json' })
+
+// Whether the phone can hand a file to its share sheet (iPhones and most Android phones).
+export function canShareFiles(): boolean {
+  try {
+    return navigator.canShare?.({ files: [backupFile('test.json', '{}')] }) ?? false
+  } catch {
+    return false
+  }
+}
+
+export async function shareFile(fileName: string, text: string) {
+  await navigator.share({ files: [backupFile(fileName, text)], title: fileName })
+}
+
+// Saves a text file to the phone's downloads (Android: Downloads folder; iPhone: Files app).
 export function downloadFile(fileName: string, text: string) {
   const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }))
   const link = document.createElement('a')
@@ -34,12 +50,7 @@ export async function deleteAllData() {
   await db.transaction('rw', db.products, db.scans, db.shops, async () => {
     await Promise.all([db.products.clear(), db.scans.clear(), db.shops.clear()])
   })
-  try {
-    // Cached nearby-shop lookups.
-    for (const key of Object.keys(localStorage)) if (key.startsWith('nearby-shops:')) localStorage.removeItem(key)
-  } catch {
-    // Storage unavailable; nothing cached to clear.
-  }
+  clearNearbyCache()
 }
 
 export async function updateShop(id: number, changes: Pick<Shop, 'name' | 'address' | 'chain'>) {

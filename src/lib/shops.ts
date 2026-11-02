@@ -83,7 +83,6 @@ type OverpassElement = {
 }
 
 const SEARCH_RADIUS_M = 150
-const CACHE_DAYS = 30
 
 // Distance in metres between two points.
 export function distanceMetres(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -117,32 +116,29 @@ export function parseOverpass(elements: OverpassElement[], latitude: number, lon
     .sort((a, b) => a.distance - b.distance)
 }
 
-function readCache(key: string): NearbyShop[] | undefined {
-  try {
-    const cached = JSON.parse(localStorage.getItem(key) ?? 'null') as { time: number; shops: NearbyShop[] } | null
-    if (cached && Date.now() - cached.time < CACHE_DAYS * 86_400_000) return cached.shops
-  } catch {
-    // Storage unavailable or corrupt: just look the shops up again.
-  }
-  return undefined
+// Nearby results are kept in memory only, so searching again in the same area doesn't repeat the
+// lookup while the app is open, but no position is ever saved on the phone.
+const nearbyCache = new Map<string, NearbyShop[]>()
+
+export function clearNearbyCache() {
+  nearbyCache.clear()
 }
 
-function writeCache(key: string, shops: NearbyShop[]) {
-  try {
-    localStorage.setItem(key, JSON.stringify({ time: Date.now(), shops }))
-  } catch {
-    // Not cached this time; harmless.
-  }
+// Earlier versions kept these results (labelled with the area) on the phone for 30 days: remove them.
+try {
+  for (const key of Object.keys(localStorage)) if (key.startsWith('nearby-shops:')) localStorage.removeItem(key)
+} catch {
+  // Storage unavailable; nothing to remove.
 }
 
 // Sends your approximate position to OpenStreetMap's Overpass service (and nowhere else) and
-// returns food shops within 150 m, nearest first. Results are kept for 30 days per area.
+// returns food shops within 150 m, nearest first.
 export async function fetchNearbyShops(latitude: number, longitude: number): Promise<NearbyShop[]> {
   // About 10 m precision is plenty for a 150 m search.
   const lat = Math.round(latitude * 10_000) / 10_000
   const lon = Math.round(longitude * 10_000) / 10_000
-  const cacheKey = `nearby-shops:${lat.toFixed(3)},${lon.toFixed(3)}`
-  const cached = readCache(cacheKey)
+  const cacheKey = `${lat.toFixed(3)},${lon.toFixed(3)}`
+  const cached = nearbyCache.get(cacheKey)
   if (cached) return cached.map((s) => ({ ...s, distance: distanceMetres(lat, lon, s.latitude!, s.longitude!) })).sort((a, b) => a.distance - b.distance)
 
   const query = `[out:json][timeout:15];nwr["shop"~"^(supermarket|convenience|greengrocer)$"](around:${SEARCH_RADIUS_M},${lat},${lon});out center tags;`
@@ -158,7 +154,7 @@ export async function fetchNearbyShops(latitude: number, longitude: number): Pro
     if (!response.ok) throw new Error(`OpenStreetMap replied ${response.status}`)
     const json = (await response.json()) as { elements?: OverpassElement[] }
     const shops = parseOverpass(json.elements ?? [], lat, lon)
-    writeCache(cacheKey, shops)
+    nearbyCache.set(cacheKey, shops)
     return shops
   } finally {
     clearTimeout(timer)
