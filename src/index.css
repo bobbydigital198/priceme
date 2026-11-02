@@ -1,11 +1,17 @@
+/* PrixIt colours: brand blue #2e3093 and yellow #fdee22.
+   --brand fills the main actions (white text on it); --brand-ink colours titles and icons;
+   --accent (yellow) marks highlights and selections, with blue text on it. */
 :root {
-  --bg: #f6f6f4;
+  --bg: #f4f5fa;
   --surface: #ffffff;
   --text: #111111;
-  --text-muted: #5c5c5c;
-  --border: #dcdcd8;
-  --accent: #ffd60a;
-  --accent-text: #111111;
+  --text-muted: #5a5b66;
+  --border: #dcdde8;
+  --brand: #2e3093;
+  --on-brand: #ffffff;
+  --brand-ink: #2e3093;
+  --accent: #fdee22;
+  --accent-text: #2e3093;
   --danger: #c4161c;
   --good: #1a7f37;
   --radius: 14px;
@@ -20,11 +26,14 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #111111;
-    --surface: #1d1d1d;
+    --bg: #10111a;
+    --surface: #1b1c29;
     --text: #f4f4f2;
-    --text-muted: #a8a8a4;
-    --border: #333331;
+    --text-muted: #a9aabb;
+    --border: #2f3146;
+    /* A little lighter so blue buttons stand out on the dark background; titles turn yellow. */
+    --brand: #3a3db8;
+    --brand-ink: #fdee22;
     --danger: #ff6b6b;
     --good: #4cc26a;
   }
@@ -77,7 +86,7 @@ button {
   border: 1px solid var(--border);
   border-radius: 14px;
   background: var(--surface);
-  color: var(--text);
+  color: var(--brand-ink);
 }
 
 .section-header {
@@ -89,6 +98,7 @@ button {
 
 .section-header h1 {
   margin: 0;
+  color: var(--brand-ink);
   font-size: 2rem;
   font-weight: 800;
   letter-spacing: -0.02em;
@@ -118,6 +128,7 @@ button {
 
 .drawer-title {
   margin: 0 12px 16px;
+  color: var(--brand-ink);
   font-size: 1.5rem;
   font-weight: 800;
 }
@@ -199,7 +210,7 @@ button {
 
 .install-card {
   margin-bottom: 20px;
-  border: 2px solid var(--accent);
+  border: 2px solid var(--brand);
 }
 
 .install-card + .empty-state {
@@ -380,6 +391,7 @@ button {
 
 .app-title {
   margin: 0;
+  color: var(--brand-ink);
   font-size: 2.25rem;
   font-weight: 800;
   letter-spacing: -0.02em;
@@ -707,8 +719,8 @@ button {
 
 .primary-button {
   border: none;
-  background: var(--accent);
-  color: var(--accent-text);
+  background: var(--brand);
+  color: var(--on-brand);
 }
 
 .primary-button:disabled {
@@ -856,7 +868,7 @@ button {
 
 .progress-bar {
   height: 100%;
-  background: var(--accent);
+  background: var(--brand);
   transition: width 0.2s;
 }
 
@@ -1382,21 +1394,30 @@ button {
   margin-top: 16px;
 }
 
-.fab {
+/* Wide scan button floating centred over the bottom of the Scans list. The logo and words are
+   centred together as one group. */
+.scan-button {
   position: fixed;
-  right: calc(env(safe-area-inset-right) + 20px);
-  bottom: calc(env(safe-area-inset-bottom) + 20px);
-  width: 68px;
-  height: 68px;
-  display: grid;
-  place-items: center;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom) + 18px);
+  transform: translateX(-50%);
+  width: min(calc(100% - 32px), 380px);
+  height: 62px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 0 24px;
   border: none;
-  border-radius: 50%;
-  background: var(--accent);
-  color: var(--accent-text);
-  box-shadow: 0 6px 20px rgb(0 0 0 / 0.3);
+  border-radius: 999px;
+  background: var(--brand);
+  color: var(--accent);
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  box-shadow: 0 8px 24px rgb(46 48 147 / 0.35);
 }
 
-.fab:active {
-  transform: scale(0.95);
+.scan-button:active {
+  transform: translateX(-50%) scale(0.97);
 }

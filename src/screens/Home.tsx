@@ -47,8 +47,9 @@ export function Home({ onOpenMenu, onStartScan, onOpenProduct }: Props) {
 
       <p className="app-version">Version {__APP_VERSION__}</p>
 
-      <button type="button" className="fab" onClick={onStartScan} aria-label="Scan a product">
-        <ScanIcon size={30} />
+      <button type="button" className="scan-button" onClick={onStartScan}>
+        <ScanIcon height={26} />
+        Scan a price
       </button>
     </main>
   )
