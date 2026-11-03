@@ -106,9 +106,17 @@ export function ProductDetail({ barcode, onBack }: Props) {
 
           <section className="stat-grid">
             <Stat
-              label="Lowest price"
-              value={formatPrice(summary.lowest.price)}
-              note={`${shopName(summary.lowest.shopId)}, ${formatDaysAgo(summary.lowest.timestamp)}`}
+              label="Latest price"
+              value={formatPrice(summary.latest.price)}
+              note={[
+                summary.latest.unitPrice !== undefined && summary.latest.unitBasis
+                  ? formatUnitPrice(summary.latest.unitPrice, summary.latest.unitBasis)
+                  : '',
+                shopName(summary.latest.shopId),
+                formatDaysAgo(summary.latest.timestamp),
+              ]
+                .filter(Boolean)
+                .join(' · ')}
             />
             <Stat
               label="Change from average"
@@ -119,19 +127,9 @@ export function ProductDetail({ barcode, onBack }: Props) {
           </section>
 
           <section className="card hero">
-            <p className="hero-label">Latest price</p>
-            <p className="hero-price">{formatPrice(summary.latest.price)}</p>
-            <p className="product-sub">
-              {[
-                summary.latest.unitPrice !== undefined && summary.latest.unitBasis
-                  ? formatUnitPrice(summary.latest.unitPrice, summary.latest.unitBasis)
-                  : '',
-                shopName(summary.latest.shopId),
-                formatDaysAgo(summary.latest.timestamp),
-              ]
-                .filter(Boolean)
-                .join(' · ')}
-            </p>
+            <p className="hero-label">Lowest price</p>
+            <p className="hero-price">{formatPrice(summary.lowest.price)}</p>
+            <p className="product-sub">{`${shopName(summary.lowest.shopId)} · ${formatDaysAgo(summary.lowest.timestamp)}`}</p>
           </section>
 
           <section className="card">

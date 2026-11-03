@@ -28,7 +28,7 @@ export function Home({ onOpenMenu, onStartScan, onOpenProduct }: Props) {
         <section className="empty-state">
           <h2>No scans yet</h2>
           <p>
-            Tap the button at the bottom right, scan a product's barcode, then photograph its shelf
+            Tap the button at the bottom, scan a product's barcode, then photograph its shelf
             price tag. Every price you log appears here, newest first.
           </p>
         </section>

@@ -45,7 +45,7 @@ Updates download by themselves in the background. To pick up a new version strai
 
 ## Using the app
 
-- **Scan a product:** tap the yellow button at the bottom right.
+- **Scan a product:** tap the **Scan a product** button at the bottom of the screen.
   1. Point the camera at the barcode. If it won't scan, tap **Type barcode instead**.
   2. Check the product and tap **Confirm**. Unknown products can be typed in, and PrixIt remembers them.
   3. Fill the white frame with the price tag and tap the shutter button. Or tap **Enter manually** to type the price.
