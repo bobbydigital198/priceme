@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
 import { requestPersistentStorage } from './lib/db'
+import './lib/theme'
 
 requestPersistentStorage()
 

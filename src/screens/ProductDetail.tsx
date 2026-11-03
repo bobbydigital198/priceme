@@ -4,9 +4,10 @@ import { PriceChart, type ChartSeries } from '../components/PriceChart'
 import { OffCredit } from '../components/Credits'
 import { ProductThumb } from '../components/ProductThumb'
 import { CATEGORIES, categorise, type CategoryId } from '../lib/categories'
-import { shopColour, useDarkMode } from '../lib/chartColours'
+import { shopColour } from '../lib/chartColours'
 import { db, type Scan, type Shop } from '../lib/db'
 import { formatDaysAgo, formatPrice, formatScanTime, formatShop, formatSignedPrice, formatUnitPrice } from '../lib/format'
+import { useDarkMode } from '../lib/theme'
 import { breakdownByShop, priceDifference, shopsInFirstSeenOrder, summariseProduct } from '../lib/stats'
 
 type Props = { barcode: string; onBack: () => void }

@@ -1,7 +1,10 @@
-/* PrixIt colours, from design_and_UX/Palettes.png: "Fresh" for light mode, "Midnight Mint" for dark.
+/* PrixIt colours, from design_and_UX: "Fresh" (Palettes.png) for light mode and "Fresh Dark"
+   (DarkModePalette.png) for dark mode.
    --brand (the palette's primary) fills buttons, selections and the scan button, with --on-brand
    text on it; --brand-ink colours the PrixIt name; --accent marks the selected item (same as
-   primary). --good and --danger are the palette's price drop and price rise colours. */
+   primary); --hero is the large Average and Latest price boxes (the primary container in dark
+   mode). --good and --danger are the palette's price drop and price rise colours.
+   Dark mode follows the phone unless chosen in Settings, which sets data-theme on <html>. */
 :root {
   --bg: #f4faf6;
   --surface: #ffffff;
@@ -14,13 +17,16 @@
   --brand-ink: #0b7f5f;
   --accent: #0b7f5f;
   --accent-text: #ffffff;
+  --hero: var(--surface);
+  --on-hero: var(--text);
+  --hero-muted: var(--text-muted);
   --danger: #b3321f;
   --on-danger: #ffffff;
   --good: #086b40;
   --radius: 14px;
   --tap: 52px;
 
-  color-scheme: light dark;
+  color-scheme: light;
   font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.4;
   -webkit-font-smoothing: antialiased;
@@ -28,22 +34,47 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0a1026;
-    --surface: #121a3a;
-    --surface-alt: #1b2652;
-    --text: #f2f5ff;
-    --text-muted: #a9b4da;
-    --border: #2a3668;
-    --brand: #3df0b0;
-    --on-brand: #0a1026;
-    --brand-ink: #3df0b0;
-    --accent: #3df0b0;
-    --accent-text: #0a1026;
-    --danger: #ff8a7a;
-    --on-danger: #0a1026;
-    --good: #3df0b0;
+  :root:not([data-theme='light']) {
+    --bg: #0a1812;
+    --surface: #112219;
+    --surface-alt: #1a3226;
+    --border: #2b4a3b;
+    --text: #eaf6ef;
+    --text-muted: #a5bdb0;
+    --brand: #34d399;
+    --on-brand: #052117;
+    --brand-ink: #34d399;
+    --accent: #34d399;
+    --accent-text: #052117;
+    --hero: #0e5a43;
+    --on-hero: #ffffff;
+    --hero-muted: #cfe9dc;
+    --danger: #ff8f7e;
+    --on-danger: #052117;
+    --good: #4ade9a;
+    color-scheme: dark;
   }
+}
+
+:root[data-theme='dark'] {
+  --bg: #0a1812;
+  --surface: #112219;
+  --surface-alt: #1a3226;
+  --border: #2b4a3b;
+  --text: #eaf6ef;
+  --text-muted: #a5bdb0;
+  --brand: #34d399;
+  --on-brand: #052117;
+  --brand-ink: #34d399;
+  --accent: #34d399;
+  --accent-text: #052117;
+  --hero: #0e5a43;
+  --on-hero: #ffffff;
+  --hero-muted: #cfe9dc;
+  --danger: #ff8f7e;
+  --on-danger: #052117;
+  --good: #4ade9a;
+  color-scheme: dark;
 }
 
 *,
@@ -1176,9 +1207,18 @@ button {
   font-size: 1.05rem;
 }
 
+.card.hero {
+  background: var(--hero);
+  color: var(--on-hero);
+}
+
+.hero .product-sub {
+  color: var(--hero-muted);
+}
+
 .hero-label {
   margin: 0;
-  color: var(--text-muted);
+  color: var(--hero-muted);
   font-size: 0.85rem;
 }
 
@@ -1465,4 +1505,13 @@ button {
 
 .scan-button:active {
   transform: translateX(-50%) scale(0.97);
+}
+
+.theme-chips {
+  margin: 4px 0 10px;
+}
+
+.theme-chips button {
+  flex: 1;
+  min-height: 44px;
 }

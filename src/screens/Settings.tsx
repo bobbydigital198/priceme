@@ -5,6 +5,7 @@ import { canShareFiles, deleteAllData, downloadFile, exportBackup, restoreBackup
 import { isIos } from '../lib/platform'
 import { db } from '../lib/db'
 import { formatScanDay } from '../lib/format'
+import { setThemeChoice, useThemeChoice, type ThemeChoice } from '../lib/theme'
 
 type Props = { onBack: () => void; onOpenOcrTest: () => void }
 
@@ -23,6 +24,7 @@ export function Settings({ onBack, onOpenOcrTest }: Props) {
       </button>
       <h1 className="product-name">Settings</h1>
 
+      <AppearanceSection />
       <BackupSection scanCount={counts?.scans ?? 0} />
 
       <section className="card">
@@ -39,6 +41,40 @@ export function Settings({ onBack, onOpenOcrTest }: Props) {
 
       <p className="app-version">Version {__APP_VERSION__}</p>
     </main>
+  )
+}
+
+// ---- Light or dark mode ----
+
+const THEMES: { id: ThemeChoice; label: string }[] = [
+  { id: 'system', label: 'Match phone' },
+  { id: 'light', label: 'Light' },
+  { id: 'dark', label: 'Dark' },
+]
+
+function AppearanceSection() {
+  const choice = useThemeChoice()
+  return (
+    <section className="card">
+      <h2 className="card-heading">Appearance</h2>
+      <div className="sort-chips theme-chips" role="radiogroup" aria-label="Light or dark mode">
+        {THEMES.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            role="radio"
+            aria-checked={choice === t.id}
+            className={choice === t.id ? 'selected' : ''}
+            onClick={() => setThemeChoice(t.id)}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+      <p className="product-sub small">
+        {choice === 'system' ? 'Follows your phone’s light or dark setting.' : `Always ${choice} mode, whatever your phone is set to.`}
+      </p>
+    </section>
   )
 }
 
