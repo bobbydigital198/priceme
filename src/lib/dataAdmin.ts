@@ -57,6 +57,15 @@ export async function updateShop(id: number, changes: Pick<Shop, 'name' | 'addre
   await db.shops.update(id, changes)
 }
 
+export async function setFavourite(id: number, favourite: boolean) {
+  await db.shops.update(id, { favourite })
+}
+
+// Favourites first, then most recently used.
+export function favouritesFirst(a: Shop, b: Shop): number {
+  return Number(!!b.favourite) - Number(!!a.favourite) || b.lastUsed - a.lastUsed
+}
+
 // Moves every scan from one shop to another, then removes the first: for duplicates.
 export async function mergeShops(fromId: number, intoId: number) {
   await db.transaction('rw', db.scans, db.shops, async () => {

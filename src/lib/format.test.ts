@@ -8,6 +8,7 @@ import {
   formatScanDay,
   formatScanTime,
   formatShop,
+  formatSignedPrice,
   formatUnitPrice,
   parseAmountInput,
 } from './format'
@@ -71,6 +72,14 @@ describe('formatDaysAgo', () => {
     expect(formatDaysAgo(new Date(2026, 9, 30, 9, 0).getTime(), now)).toBe('yesterday')
     expect(formatDaysAgo(new Date(2026, 9, 19, 9, 0).getTime(), now)).toBe('12 days ago')
     expect(formatDaysAgo(new Date(2026, 5, 1, 9, 0).getTime(), now)).toBe('1 Jun')
+  })
+})
+
+describe('formatSignedPrice', () => {
+  it('shows a sign before the euros', () => {
+    expect(formatSignedPrice(0.54)).toBe(`+0,54${nbsp}€`)
+    expect(formatSignedPrice(-1.2)).toBe(`-1,20${nbsp}€`)
+    expect(formatSignedPrice(0)).toBe(`0,00${nbsp}€`)
   })
 })
 

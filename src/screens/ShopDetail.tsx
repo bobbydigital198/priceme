@@ -1,5 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useState } from 'react'
+import { FavouriteButton } from '../components/FavouriteButton'
 import { ProductThumb } from '../components/ProductThumb'
 import { ShopEditor } from '../components/ShopEditor'
 import { db, type Product } from '../lib/db'
@@ -42,7 +43,10 @@ export function ShopDetail({ shopId, onBack, onOpenProduct }: Props) {
       <button type="button" className="back-button" onClick={onBack}>
         Back
       </button>
-      <h1 className="product-name">{formatShop(shop)}</h1>
+      <div className="shop-title-row">
+        <h1 className="product-name">{formatShop(shop)}</h1>
+        <FavouriteButton shop={shop} />
+      </div>
       {shop.chain && shop.chain !== shop.name && <p className="product-sub">{shop.chain}</p>}
 
       {summary ? (

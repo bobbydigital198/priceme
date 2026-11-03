@@ -1,5 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useState, type FormEvent } from 'react'
+import { favouritesFirst } from '../lib/dataAdmin'
 import { db } from '../lib/db'
 import { formatShop } from '../lib/format'
 import { OsmCredit } from './Credits'
@@ -25,7 +26,8 @@ type Nearby =
 // Full-screen list for choosing the shop: your saved shops, a new shop, or (only if you ask)
 // shops near your current location.
 export function ShopPicker({ title = 'Which shop?', showSaved = true, currentId, chain, onPick, onClose }: Props) {
-  const saved = useLiveQuery(() => db.shops.orderBy('lastUsed').reverse().toArray())
+  // Favourites first, then most recently used.
+  const saved = useLiveQuery(async () => (await db.shops.toArray()).sort(favouritesFirst))
   const [nearby, setNearby] = useState<Nearby>({ status: 'idle' })
   const [name, setName] = useState(chain ?? '')
   const [newChain, setNewChain] = useState(chain ?? '')
@@ -87,7 +89,8 @@ export function ShopPicker({ title = 'Which shop?', showSaved = true, currentId,
               {saved.map((shop) => (
                 <li key={shop.id}>
                   <button type="button" className={shop.id === currentId ? 'selected' : ''} onClick={() => onPick(shop.id!)}>
-                    {formatShop(shop)}
+                    <span>{formatShop(shop)}</span>
+                    {shop.favourite && <span className="shop-meta" aria-label="Favourite">★</span>}
                   </button>
                 </li>
               ))}

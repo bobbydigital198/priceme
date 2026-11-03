@@ -10,6 +10,11 @@ export function formatUnitPrice(euros: number, basis: 'kg' | 'L'): string {
   return `${formatPrice(euros)}/${basis}`
 }
 
+// "+0,45 €" or "-0,30 €".
+export function formatSignedPrice(euros: number): string {
+  return `${euros > 0 ? '+' : euros < 0 ? '-' : ''}${formatPrice(Math.abs(euros))}`
+}
+
 // "+0,45 € (+15%)", "-0,30 € (-10%)" or "Same price".
 export function formatDifference({ euros, percent }: { euros: number; percent: number }): string {
   if (euros === 0) return 'Same price'

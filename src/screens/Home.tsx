@@ -49,7 +49,7 @@ export function Home({ onOpenMenu, onStartScan, onOpenProduct }: Props) {
 
       <button type="button" className="scan-button" onClick={onStartScan}>
         <ScanIcon height={26} />
-        Scan a price
+        Scan a product
       </button>
     </main>
   )

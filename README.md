@@ -52,8 +52,8 @@ Updates download by themselves in the background. To pick up a new version strai
   4. Check the price and the shop, then tap **Save**.
 - **The shop** is remembered for 30 minutes, so the rest of a shopping trip needs no taps. Tap the shop to change it.
 - **The menu** (☰, top left) moves between the sections:
-  - **Scans:** your recent scans, each product once, with its latest price. Tap one for its stats, a price chart, a per-shop comparison and every scan; you can delete a wrong scan or change its category there.
-  - **Shops:** your shops, with visits, products and last visit. Tap one to see everything you've bought there and whether it's cheaper or dearer than elsewhere, or to rename, merge or delete it.
+  - **Scans:** your recent scans, each product once, with its latest price. Tap one for its average, lowest and latest price, how the latest compares with the average, a price chart, a per-shop comparison and every scan; you can delete a wrong scan or change its category there.
+  - **Shops:** your shops, with visits, products and last visit. Tap the ☆ to make a shop a favourite: favourites have their own filter and come first when you choose a shop for a scan. Tap one to see everything you've bought there and whether it's cheaper or dearer than elsewhere, or to rename, merge or delete it.
   - **Products:** every category, greyed out until you've scanned something in it, with the number of different products in each. Tap a category to see its products.
   - **Settings:** backups, a price reader test using photos from your gallery, and deleting all data.
 

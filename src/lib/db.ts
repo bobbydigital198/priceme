@@ -48,6 +48,8 @@ export type Shop = {
   longitude?: number
   source: 'osm' | 'manual'
   lastUsed: number
+  // Starred by you: listed first when choosing a shop, and under Favourites in Shops.
+  favourite?: boolean
 }
 
 export const db = new Dexie('priceme') as Dexie & {

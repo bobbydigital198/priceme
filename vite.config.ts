@@ -31,8 +31,8 @@ export default defineConfig({
         scope: '/priceme/',
         display: 'standalone',
         orientation: 'portrait',
-        background_color: '#ffffff',
-        theme_color: '#2e3093',
+        background_color: '#f4faf6',
+        theme_color: '#0b7f5f',
         icons: [
           { src: 'pwa-64x64.png', sizes: '64x64', type: 'image/png' },
           { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },

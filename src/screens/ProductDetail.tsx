@@ -6,8 +6,8 @@ import { ProductThumb } from '../components/ProductThumb'
 import { CATEGORIES, categorise, type CategoryId } from '../lib/categories'
 import { shopColour, useDarkMode } from '../lib/chartColours'
 import { db, type Scan, type Shop } from '../lib/db'
-import { formatDaysAgo, formatDifference, formatPrice, formatScanTime, formatShop, formatUnitPrice } from '../lib/format'
-import { breakdownByShop, shopsInFirstSeenOrder, summariseProduct } from '../lib/stats'
+import { formatDaysAgo, formatPrice, formatScanTime, formatShop, formatSignedPrice, formatUnitPrice } from '../lib/format'
+import { breakdownByShop, priceDifference, shopsInFirstSeenOrder, summariseProduct } from '../lib/stats'
 
 type Props = { barcode: string; onBack: () => void }
 
@@ -31,6 +31,8 @@ export function ProductDetail({ barcode, onBack }: Props) {
   }
 
   const summary = summariseProduct(scans ?? [])
+  // How the latest price compares with your average for this product.
+  const fromAverage = summary ? priceDifference(summary.latest.price, summary.average) : { euros: 0, percent: 0 }
   const order = shopsInFirstSeenOrder(scans ?? [])
   const colourOf = (shopId?: number) => shopColour(order.indexOf(shopId), dark)
   const series: ChartSeries[] = order.map((shopId) => ({
@@ -96,6 +98,26 @@ export function ProductDetail({ barcode, onBack }: Props) {
       {summary && (
         <>
           <section className="card hero">
+            <p className="hero-label">Average price</p>
+            <p className="hero-price">{formatPrice(summary.average)}</p>
+            <p className="product-sub">{summary.count === 1 ? 'From 1 scan' : `From ${summary.count} scans`}</p>
+          </section>
+
+          <section className="stat-grid">
+            <Stat
+              label="Lowest price"
+              value={formatPrice(summary.lowest.price)}
+              note={`${shopName(summary.lowest.shopId)}, ${formatDaysAgo(summary.lowest.timestamp)}`}
+            />
+            <Stat
+              label="Change from average"
+              value={fromAverage.euros === 0 ? 'Same' : formatSignedPrice(fromAverage.euros)}
+              note={fromAverage.euros === 0 ? 'Latest price is the average' : `${fromAverage.percent > 0 ? '+' : ''}${fromAverage.percent}% (latest vs average)`}
+              tone={fromAverage.euros > 0 ? 'up' : fromAverage.euros < 0 ? 'down' : undefined}
+            />
+          </section>
+
+          <section className="card hero">
             <p className="hero-label">Latest price</p>
             <p className="hero-price">{formatPrice(summary.latest.price)}</p>
             <p className="product-sub">
@@ -111,24 +133,13 @@ export function ProductDetail({ barcode, onBack }: Props) {
             </p>
           </section>
 
-          <section className="stat-grid">
-            <Stat label="Lowest" value={formatPrice(summary.lowest.price)} note={`${shopName(summary.lowest.shopId)}, ${formatDaysAgo(summary.lowest.timestamp)}`} />
-            <Stat label="Highest" value={formatPrice(summary.highest.price)} note={`${shopName(summary.highest.shopId)}, ${formatDaysAgo(summary.highest.timestamp)}`} />
-            <Stat label="Average" value={formatPrice(summary.average)} note={summary.count === 1 ? '1 scan' : `${summary.count} scans`} />
-            <Stat
-              label="Change since first scan"
-              value={summary.count > 1 ? formatDifference(summary.change) : '–'}
-              note={summary.count > 1 ? `from ${formatPrice(summary.first.price)}, ${formatDaysAgo(summary.first.timestamp)}` : 'Needs two scans'}
-              tone={summary.count > 1 ? (summary.change.euros > 0 ? 'up' : summary.change.euros < 0 ? 'down' : undefined) : undefined}
-            />
-          </section>
-
           <section className="card">
             <h2 className="card-heading">Price over time</h2>
             {summary.count < 2 ? (
               <p className="product-sub">The chart appears after your second scan of this product.</p>
             ) : (
               <>
+                <PriceChart series={series} dark={dark} />
                 {series.length > 1 && (
                   <div className="chart-legend" role="group" aria-label="Show or hide shops">
                     {series.map((s) => (
@@ -145,8 +156,7 @@ export function ProductDetail({ barcode, onBack }: Props) {
                     ))}
                   </div>
                 )}
-                <PriceChart series={series} dark={dark} />
-                {series.length > 1 && <p className="product-sub small">Tap a shop to show or hide its line.</p>}
+                {series.length > 1 && <p className="product-sub small">Tap a shop above to show or hide its line.</p>}
               </>
             )}
           </section>

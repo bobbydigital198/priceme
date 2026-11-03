@@ -1,20 +1,22 @@
-/* PrixIt colours: brand blue #2e3093 with white.
-   --brand fills the main actions (white text on it); --brand-ink colours titles and icons;
-   --accent marks highlights and selections: blue with white text in light mode,
-   white with blue text in dark mode. */
+/* PrixIt colours, from design_and_UX/Palettes.png: "Fresh" for light mode, "Midnight Mint" for dark.
+   --brand (the palette's primary) fills buttons, selections and the scan button, with --on-brand
+   text on it; --brand-ink colours the PrixIt name; --accent marks the selected item (same as
+   primary). --good and --danger are the palette's price drop and price rise colours. */
 :root {
-  --bg: #f4f5fa;
+  --bg: #f4faf6;
   --surface: #ffffff;
-  --text: #111111;
-  --text-muted: #5a5b66;
-  --border: #dcdde8;
-  --brand: #2e3093;
+  --surface-alt: #e6f2ea;
+  --text: #0f2a20;
+  --text-muted: #4b6358;
+  --border: #cfe2d6;
+  --brand: #0b7f5f;
   --on-brand: #ffffff;
-  --brand-ink: #2e3093;
-  --accent: #2e3093;
+  --brand-ink: #0b7f5f;
+  --accent: #0b7f5f;
   --accent-text: #ffffff;
-  --danger: #c4161c;
-  --good: #1a7f37;
+  --danger: #b3321f;
+  --on-danger: #ffffff;
+  --good: #086b40;
   --radius: 14px;
   --tap: 52px;
 
@@ -27,18 +29,20 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #10111a;
-    --surface: #1b1c29;
-    --text: #f4f4f2;
-    --text-muted: #a9aabb;
-    --border: #2f3146;
-    /* A little lighter so blue buttons stand out on the dark background; titles and highlights turn white. */
-    --brand: #3a3db8;
-    --brand-ink: #ffffff;
-    --accent: #ffffff;
-    --accent-text: #2e3093;
-    --danger: #ff6b6b;
-    --good: #4cc26a;
+    --bg: #0a1026;
+    --surface: #121a3a;
+    --surface-alt: #1b2652;
+    --text: #f2f5ff;
+    --text-muted: #a9b4da;
+    --border: #2a3668;
+    --brand: #3df0b0;
+    --on-brand: #0a1026;
+    --brand-ink: #3df0b0;
+    --accent: #3df0b0;
+    --accent-text: #0a1026;
+    --danger: #ff8a7a;
+    --on-danger: #0a1026;
+    --good: #3df0b0;
   }
 }
 
@@ -89,7 +93,7 @@ button {
   border: 1px solid var(--border);
   border-radius: 14px;
   background: var(--surface);
-  color: var(--brand-ink);
+  color: var(--text);
 }
 
 .section-header {
@@ -101,7 +105,7 @@ button {
 
 .section-header h1 {
   margin: 0;
-  color: var(--brand-ink);
+  color: var(--text);
   font-size: 2rem;
   font-weight: 800;
   letter-spacing: -0.02em;
@@ -304,6 +308,7 @@ button {
 
 .list-toolbar {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
   gap: 8px;
@@ -346,6 +351,42 @@ button {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
+}
+
+.shop-card-item {
+  position: relative;
+}
+
+.shop-card-item .shop-card {
+  padding-right: 64px;
+}
+
+.shop-card-item .favourite-button {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+}
+
+.favourite-button {
+  flex: none;
+  width: var(--tap);
+  display: grid;
+  place-items: center;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+}
+
+.favourite-button.on {
+  color: var(--brand);
+}
+
+.shop-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
 }
 
 .shop-card-name {
@@ -508,9 +549,10 @@ button {
   column-gap: 8px;
 }
 
-.scan-row-meta span + span::before {
+/* The dot goes after each item, so a wrapped line never starts with one. */
+.scan-row-meta span:not(:last-child)::after {
   content: '·';
-  margin-right: 8px;
+  margin-left: 8px;
 }
 
 .scan-row-price {
@@ -548,8 +590,8 @@ button {
 .thumb-placeholder {
   display: grid;
   place-items: center;
-  background: var(--border);
-  color: var(--text-muted);
+  background: var(--surface-alt);
+  color: var(--text);
   font-weight: 700;
   font-size: 1.4rem;
 }
@@ -1025,7 +1067,7 @@ button {
   padding: 12px 14px;
   border-radius: 10px;
   background: var(--danger);
-  color: #ffffff;
+  color: var(--on-danger);
   font-weight: 700;
 }
 
@@ -1188,7 +1230,7 @@ button {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-bottom: 8px;
+  margin: 12px 0 4px;
 }
 
 .chart-legend button {
@@ -1305,7 +1347,7 @@ button {
   border: none;
   border-radius: 12px;
   background: var(--danger);
-  color: #ffffff;
+  color: var(--on-danger);
   font-weight: 700;
 }
 
@@ -1418,7 +1460,7 @@ button {
   font-size: 1.15rem;
   font-weight: 800;
   letter-spacing: 0.01em;
-  box-shadow: 0 8px 24px rgb(46 48 147 / 0.35);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--brand) 35%, transparent);
 }
 
 .scan-button:active {
