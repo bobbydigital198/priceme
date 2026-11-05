@@ -76,7 +76,7 @@ The full privacy notice and data-licence credits are in the app under **☰ → 
 
 
 - **Barcode lookups** go to [Open Food Facts](https://world.openfoodfacts.org), a free, open product database, to get the product's name, brand, pack size, category and photo. If it doesn't know a barcode (usually non-food, like toilet paper or soap), the barcode is tried at its sister databases [Open Beauty Facts](https://world.openbeautyfacts.org) and [Open Products Facts](https://world.openproductsfacts.org), run by the same non-profit. Products are then remembered, so repeat scans don't go online.
-- **Your location** is only used if you tap **Use my location** in the shop list. Your approximate position is then sent to OpenStreetMap's Overpass service to find shops within 150 m (or, if that's busy, to a second public Overpass server run by Private.coffee), and nowhere else. It isn't saved.
+- **Your location** is only used if you tap **Use my location** in the shop list. Your approximate position is then sent to OpenStreetMap's Overpass service to find shops within 150 m (or, if that's busy, to the public Overpass servers Overpass Europe and then Private.coffee), and nowhere else. It isn't saved.
 - **Price tag photos** never leave your phone. The price reader (Tesseract) runs on the phone itself.
 
 ## Running it on your computer

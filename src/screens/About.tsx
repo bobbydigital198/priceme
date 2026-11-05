@@ -78,7 +78,7 @@ export function About({ onOpenMenu }: Props) {
           <li>
             <strong>Only if you tap "Use my location":</strong> your position (to about 10 m) is sent to OpenStreetMap's
             Overpass service (run by FOSSGIS e.V., Germany) to find shops within 150 m. If that server is busy, the same
-            search is sent to a second public Overpass server, run by Private.coffee. You're asked first; it isn't saved,
+            search is sent to Overpass Europe (dresel.systems), and then to Private.coffee, both public Overpass servers. You're asked first; it isn't saved,
             and nothing about your location is sent anywhere else.
           </li>
           <li>Price tag photos and the text read from them are never sent anywhere.</li>

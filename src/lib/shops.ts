@@ -177,11 +177,12 @@ export async function fetchNearbyShops(latitude: number, longitude: number): Pro
   if (cached) return cached.map((s) => ({ ...s, distance: distanceMetres(lat, lon, s.latitude!, s.longitude!) })).sort((a, b) => a.distance - b.distance)
 
   const query = `[out:json][timeout:15];nwr["shop"~"^(supermarket|convenience|greengrocer)$"](around:${SEARCH_RADIUS_M},${lat},${lon});out center tags;`
-  // The main server is often busy, so a second public server is tried if it fails.
+  // The main server is often overloaded, so the others are tried in turn if it fails.
+  // Your position only goes to the next server if the one before didn't answer.
   let lastError: unknown
-  for (const server of OVERPASS_SERVERS) {
+  for (const { url, timeoutMs } of OVERPASS_SERVERS) {
     try {
-      const elements = await queryOverpass(server, query)
+      const elements = await queryOverpass(url, query, timeoutMs)
       const shops = parseOverpass(elements, lat, lon)
       nearbyCache.set(cacheKey, shops)
       return shops
@@ -192,12 +193,17 @@ export async function fetchNearbyShops(latitude: number, longitude: number): Pro
   throw lastError
 }
 
-// The main OpenStreetMap search server (FOSSGIS, Germany), then a second public one (Private.coffee).
-export const OVERPASS_SERVERS = ['https://overpass-api.de/api/interpreter', 'https://overpass.private.coffee/api/interpreter']
+// Public OpenStreetMap search (Overpass) servers, in the order they're tried: the main one
+// (FOSSGIS, Germany), Overpass Europe (dresel.systems; covers Europe only), then Private.coffee.
+export const OVERPASS_SERVERS = [
+  { url: 'https://overpass-api.de/api/interpreter', timeoutMs: 8_000 },
+  { url: 'https://ovp.dresel.systems/api/interpreter', timeoutMs: 10_000 },
+  { url: 'https://overpass.private.coffee/api/interpreter', timeoutMs: 10_000 },
+]
 
-async function queryOverpass(server: string, query: string): Promise<OverpassElement[]> {
+async function queryOverpass(server: string, query: string, timeoutMs: number): Promise<OverpassElement[]> {
   const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), 12_000)
+  const timer = setTimeout(() => controller.abort(), timeoutMs)
   try {
     const response = await fetch(server, {
       method: 'POST',

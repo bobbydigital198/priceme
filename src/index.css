@@ -1394,8 +1394,9 @@ button {
 
 .history-row {
   display: grid;
-  grid-template-columns: 1fr auto auto;
-  gap: 12px;
+  /* minmax lets the date column shrink, so the row never spills out of its card. */
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 10px;
   align-items: center;
   padding: 8px 0;
 }
@@ -1410,9 +1411,15 @@ button {
   font-variant-numeric: tabular-nums;
 }
 
+/* Edit above Delete, so both fit on narrow phones and with large text. */
 .history-actions {
   display: flex;
+  flex-direction: column;
   gap: 6px;
+}
+
+.history-actions button {
+  min-height: 36px;
 }
 
 .edit-button {
