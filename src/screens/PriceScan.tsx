@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { ReadingProgress } from '../components/ReadingProgress'
 import { TagIcon } from '../components/TagIcon'
-import { frameToVideoCrop } from '../lib/crop'
+import { FocusRing } from '../components/FocusRing'
+import { frameToVideoCrop, videoCropToPhoto } from '../lib/crop'
 import type { Product, Scan } from '../lib/db'
 import { cropToCanvas } from '../lib/imageProcessing'
 import { getOcrWorker, readPriceTag, type TagReading } from '../lib/ocr'
@@ -99,26 +100,32 @@ type CameraProps = {
 }
 
 function TagCamera({ onCancel, onCapture, onManual, onError }: CameraProps) {
-  const { videoRef, ready } = useRearCamera(onError)
+  const { videoRef, ready, canFocus, tapToFocus, focusPoint, takePhoto } = useRearCamera(onError)
   const frameRef = useRef<HTMLDivElement>(null)
+  const [capturing, setCapturing] = useState(false)
 
-  function capture() {
+  async function capture() {
     const video = videoRef.current
     const frame = frameRef.current
-    if (!video || !frame || !video.videoWidth) return
-    const { sx, sy, sw, sh } = frameToVideoCrop(
-      { width: video.videoWidth, height: video.videoHeight },
-      video.getBoundingClientRect(),
-      frame.getBoundingClientRect(),
-    )
+    if (!video || !frame || !video.videoWidth || capturing) return
+    const videoSize = { width: video.videoWidth, height: video.videoHeight }
+    const crop = frameToVideoCrop(videoSize, video.getBoundingClientRect(), frame.getBoundingClientRect())
+    // The live view is kept as a backup in case a full photo can't be taken.
+    const fromView = cropToCanvas(video, crop.sx, crop.sy, crop.sw, crop.sh)
     navigator.vibrate?.(40)
-    onCapture(cropToCanvas(video, sx, sy, sw, sh))
+    setCapturing(true)
+
+    const photo = await takePhoto()
+    const photoCrop = photo && videoCropToPhoto(crop, videoSize, photo)
+    const tag = photo && photoCrop ? cropToCanvas(photo, photoCrop.sx, photoCrop.sy, photoCrop.sw, photoCrop.sh) : fromView
+    photo?.close()
+    onCapture(tag)
   }
 
   return (
     <main className="camera-screen">
       <video ref={videoRef} className="camera-video" playsInline muted autoPlay />
-      <div className="camera-overlay">
+      <div className="camera-overlay" onPointerUp={tapToFocus}>
         <div className="camera-top">
           <button type="button" className="camera-button" onClick={onCancel}>
             Cancel
@@ -129,13 +136,16 @@ function TagCamera({ onCancel, onCapture, onManual, onError }: CameraProps) {
           <TagIcon className="tag-guide" />
         </div>
         <div className="camera-bottom">
-          <p className="camera-hint">Fill the frame with the tag and hold steady.</p>
-          <button type="button" className="shutter" onClick={capture} disabled={!ready} aria-label="Take photo" />
+          <p className="camera-hint">
+            {capturing ? 'Taking the photo…' : `Fill the frame with the tag and hold steady.${canFocus ? ' Tap the screen to focus.' : ''}`}
+          </p>
+          <button type="button" className="shutter" onClick={capture} disabled={!ready || capturing} aria-label="Take photo" />
           <button type="button" className="camera-button" onClick={onManual}>
             Enter manually
           </button>
         </div>
       </div>
+      <FocusRing key={focusPoint?.id} point={focusPoint} />
     </main>
   )
 }

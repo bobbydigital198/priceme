@@ -46,13 +46,14 @@ Updates download by themselves in the background. To pick up a new version strai
 ## Using the app
 
 - **Scan a product:** tap the **Scan a product** button at the bottom of the screen.
-  1. Point the camera at the barcode. If it won't scan, tap **Type barcode instead**.
+  1. Fit the barcode inside the white frame (only barcodes inside it are read). If it won't scan, tap **Type barcode instead**.
   2. Check the product and tap **Confirm**. Unknown products can be typed in, and PrixIt remembers them.
   3. Fill the white frame with the price tag and tap the shutter button. Or tap **Enter manually** to type the price.
+  - If the picture is blurry, tap the screen where you want the camera to focus (Android; iPhones focus by themselves).
   4. Check the price and the shop, then tap **Save**.
 - **The shop** is remembered for 30 minutes, so the rest of a shopping trip needs no taps. Tap the shop to change it.
 - **The menu** (☰, top left) moves between the sections:
-  - **Scans:** your recent scans, each product once, with its latest price. Tap one for its average, lowest and latest price, how the latest compares with the average, a price chart, a per-shop comparison and every scan; you can delete a wrong scan or change its category there.
+  - **Scans:** your recent scans, each product once, with its latest price. Tap one for its average, lowest and latest price, how the latest compares with the average, a price chart, a per-shop comparison and every scan; you can edit a scan's price, price per kilo and shop, delete a wrong scan, or change the product's category there.
   - **Shops:** your shops, with visits, products and last visit. Tap the ☆ to make a shop a favourite: favourites have their own filter and come first when you choose a shop for a scan. Tap one to see everything you've bought there and whether it's cheaper or dearer than elsewhere, or to rename, merge or delete it.
   - **Products:** every category, greyed out until you've scanned something in it, with the number of different products in each. Tap a category to see its products.
   - **Settings:** light or dark mode (or match your phone), backups, a price reader test using photos from your gallery, and deleting all data.
@@ -74,7 +75,7 @@ The full privacy notice and data-licence credits are in the app under **☰ → 
 
 
 - **Barcode lookups** go to [Open Food Facts](https://world.openfoodfacts.org), a free, open product database, to get the product's name, brand, pack size, category and photo. If it doesn't know a barcode (usually non-food, like toilet paper or soap), the barcode is tried at its sister databases [Open Beauty Facts](https://world.openbeautyfacts.org) and [Open Products Facts](https://world.openproductsfacts.org), run by the same non-profit. Products are then remembered, so repeat scans don't go online.
-- **Your location** is only used if you tap **Use my location** in the shop list. Your approximate position is then sent to OpenStreetMap's Overpass service to find shops within 150 m, and nowhere else. It isn't saved.
+- **Your location** is only used if you tap **Use my location** in the shop list. Your approximate position is then sent to OpenStreetMap's Overpass service to find shops within 150 m (or, if that's busy, to a second public Overpass server run by Private.coffee), and nowhere else. It isn't saved.
 - **Price tag photos** never leave your phone. The price reader (Tesseract) runs on the phone itself.
 
 ## Running it on your computer
@@ -133,7 +134,7 @@ If your phone shows a lower number than the latest update, it hasn't picked up t
 
 **An update or a new icon doesn't appear.** Close and reopen the app twice. The home-screen icon can take up to a day to refresh. Uninstalling and reinstalling the app updates it straight away, and keeps your data as long as you don't clear Chrome's data. Save a backup first to be safe.
 
-**"Couldn't reach OpenStreetMap"** when using your location: its free service is sometimes busy. Pick or add the shop by hand instead.
+**"Couldn't reach OpenStreetMap"** when using your location: PrixIt tries two free map servers, and both are sometimes busy. Pick or add the shop by hand instead.
 
 ## How the project is organised
 

@@ -56,8 +56,8 @@ export function About({ onOpenMenu }: Props) {
         <ul>
           <li>Products you've scanned: barcode, name, brand, pack size, category and a link to the product photo.</li>
           <li>
-            Each scan: the price, the price per kilo or litre, the date and time, the shop, a small photo of the price tag
-            and the text read from it. Tag photos stay on your phone; avoid photographing people.
+            Each scan: the price, the price per kilo or litre, the date and time, the shop and the text read from the price
+            tag. The tag photo itself is only used while reading it, and isn't kept.
           </li>
           <li>Your shops: name, street and chain, plus the shop's location if you found it with "Find shops near me".</li>
         </ul>
@@ -76,7 +76,8 @@ export function About({ onOpenMenu }: Props) {
           </li>
           <li>
             <strong>Only if you tap "Use my location":</strong> your position (to about 10 m) is sent to OpenStreetMap's
-            Overpass service (run by FOSSGIS e.V., Germany) to find shops within 150 m. You're asked first; it isn't saved,
+            Overpass service (run by FOSSGIS e.V., Germany) to find shops within 150 m. If that server is busy, the same
+            search is sent to a second public Overpass server, run by Private.coffee. You're asked first; it isn't saved,
             and nothing about your location is sent anywhere else.
           </li>
           <li>Price tag photos and the text read from them are never sent anywhere.</li>

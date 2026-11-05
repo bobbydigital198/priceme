@@ -43,5 +43,10 @@ export function parseBackup(text: string): ParsedBackup {
   )
   if (badProduct >= 0 || badShop >= 0 || badScan >= 0) return { ok: false, error: 'This backup is damaged: some entries are unreadable.' }
 
-  return { ok: true, backup: json as unknown as Backup }
+  // Older backups include a small tag photo with each scan; those are no longer kept.
+  const scans = json.scans.map((s) => {
+    const { tagThumbnail: _photo, ...scan } = s as Record<string, unknown>
+    return scan
+  })
+  return { ok: true, backup: { ...json, scans } as unknown as Backup }
 }

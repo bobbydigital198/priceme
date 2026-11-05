@@ -2,6 +2,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { useState } from 'react'
 import { PriceChart, type ChartSeries } from '../components/PriceChart'
 import { OffCredit } from '../components/Credits'
+import { EditScan } from '../components/EditScan'
 import { ProductThumb } from '../components/ProductThumb'
 import { CATEGORIES, categorise, type CategoryId } from '../lib/categories'
 import { shopColour } from '../lib/chartColours'
@@ -23,6 +24,7 @@ export function ProductDetail({ barcode, onBack }: Props) {
   const dark = useDarkMode()
   const [hidden, setHidden] = useState<Set<string>>(new Set())
   const [confirmingDelete, setConfirmingDelete] = useState<number>()
+  const [editing, setEditing] = useState<number>()
 
   const name = product?.name ?? 'Unknown product'
   const shopById = new Map((shops ?? []).map((s): [number, Shop] => [s.id!, s]))
@@ -211,15 +213,32 @@ export function ProductDetail({ barcode, onBack }: Props) {
                         </div>
                       )}
                     </div>
-                    <button
-                      type="button"
-                      className="delete-button"
-                      aria-label={`Delete the scan from ${formatScanTime(scan.timestamp)}`}
-                      onClick={() => setConfirmingDelete(scan.id)}
-                    >
-                      Delete
-                    </button>
+                    <div className="history-actions">
+                      <button
+                        type="button"
+                        className="edit-button"
+                        aria-label={`Edit the scan from ${formatScanTime(scan.timestamp)}`}
+                        onClick={() => {
+                          setConfirmingDelete(undefined)
+                          setEditing(scan.id)
+                        }}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        className="delete-button"
+                        aria-label={`Delete the scan from ${formatScanTime(scan.timestamp)}`}
+                        onClick={() => {
+                          setEditing(undefined)
+                          setConfirmingDelete(scan.id)
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
+                  {editing === scan.id && <EditScan key={scan.id} scan={scan} product={product} onDone={() => setEditing(undefined)} />}
                   {confirmingDelete === scan.id && (
                     <div className="delete-confirm" role="alert">
                       <p>

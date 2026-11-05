@@ -26,6 +26,7 @@ export function BarcodeScan({ onCancel, onConfirm }: Props) {
   const [step, setStep] = useState<Step>({ kind: 'scanning' })
   // Ignores a slow lookup if the user has since moved on.
   const lookupId = useRef(0)
+  const guideRef = useRef<HTMLDivElement>(null)
 
   async function lookUp(barcode: string) {
     const id = ++lookupId.current
@@ -58,22 +59,33 @@ export function BarcodeScan({ onCancel, onConfirm }: Props) {
   if (step.kind === 'scanning') {
     return (
       <main className="camera-screen">
-        <BarcodeCamera onDetected={handleDetected} onError={(message) => setStep({ kind: 'camera-error', message })} />
-        <div className="camera-overlay">
-          <div className="camera-top">
-            <button type="button" className="camera-button" onClick={onCancel}>
-              Cancel
-            </button>
-            <p className="camera-label">{STEP_LABEL}</p>
-          </div>
-          <BarcodeIcon className="camera-guide" />
-          <div className="camera-bottom">
-            <p className="camera-hint">Hold the barcode flat and level inside the frame.</p>
-            <button type="button" className="camera-button" onClick={() => setStep({ kind: 'typing' })}>
-              Type barcode instead
-            </button>
-          </div>
-        </div>
+        <BarcodeCamera
+          guideRef={guideRef}
+          onDetected={handleDetected}
+          onError={(message) => setStep({ kind: 'camera-error', message })}
+        >
+          {(canFocus) => (
+            <>
+              <div className="camera-top">
+                <button type="button" className="camera-button" onClick={onCancel}>
+                  Cancel
+                </button>
+                <p className="camera-label">{STEP_LABEL}</p>
+              </div>
+              <div ref={guideRef} className="barcode-frame">
+                <BarcodeIcon className="camera-guide" />
+              </div>
+              <div className="camera-bottom">
+                <p className="camera-hint">
+                  Fit the barcode inside the frame.{canFocus ? ' Tap the screen to focus.' : ''}
+                </p>
+                <button type="button" className="camera-button" onClick={() => setStep({ kind: 'typing' })}>
+                  Type barcode instead
+                </button>
+              </div>
+            </>
+          )}
+        </BarcodeCamera>
       </main>
     )
   }

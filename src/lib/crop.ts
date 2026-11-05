@@ -15,3 +15,22 @@ export function frameToVideoCrop(video: { width: number; height: number }, eleme
 
   return { sx: Math.round(x0), sy: Math.round(y0), sw: Math.round(x1 - x0), sh: Math.round(y1 - y0) }
 }
+
+type Size = { width: number; height: number }
+type Crop = { sx: number; sy: number; sw: number; sh: number }
+
+// Moves a crop of the live view onto a full-resolution photo of the same scene. The live view
+// is the middle of the photo (the photo can show a little more at two edges), scaled down.
+// Returns undefined if the photo is turned the other way, so the live view is used instead.
+export function videoCropToPhoto(crop: Crop, video: Size, photo: Size): Crop | undefined {
+  if (video.width > video.height !== photo.width > photo.height) return undefined
+  const scale = Math.min(photo.width / video.width, photo.height / video.height)
+  const offsetX = (photo.width - video.width * scale) / 2
+  const offsetY = (photo.height - video.height * scale) / 2
+  return {
+    sx: Math.max(0, Math.round(offsetX + crop.sx * scale)),
+    sy: Math.max(0, Math.round(offsetY + crop.sy * scale)),
+    sw: Math.round(crop.sw * scale),
+    sh: Math.round(crop.sh * scale),
+  }
+}

@@ -4,7 +4,7 @@ import { backupFileName, makeBackup, parseBackup } from './backup'
 const data = {
   products: [{ barcode: '3017620422003', name: 'Nutella', source: 'openfoodfacts' as const, updatedAt: 1 }],
   shops: [{ id: 1, name: 'Franprix', source: 'manual' as const, lastUsed: 2 }],
-  scans: [{ id: 5, barcode: '3017620422003', price: 4.99, timestamp: 3, shopId: 1, tagThumbnail: 'data:image/jpeg;base64,AAAA' }],
+  scans: [{ id: 5, barcode: '3017620422003', price: 4.99, timestamp: 3, shopId: 1 }],
 }
 
 describe('backups', () => {
@@ -13,6 +13,13 @@ describe('backups', () => {
     const parsed = parseBackup(JSON.stringify(backup))
     expect(parsed).toEqual({ ok: true, backup })
     expect(backup).toMatchObject({ app: 'PriceMe', format: 1, appVersion: '1.8.13', ...data })
+  })
+
+  it('drops the tag photos older backups contain', () => {
+    const old = makeBackup(data, '1.13.22')
+    const withPhoto = { ...old, scans: [{ ...old.scans[0], tagThumbnail: 'data:image/jpeg;base64,AAAA' }] }
+    const parsed = parseBackup(JSON.stringify(withPhoto))
+    expect(parsed).toEqual({ ok: true, backup: old })
   })
 
   it('names the file by date', () => {

@@ -67,7 +67,8 @@ export function normaliseBarcode(raw: string, format?: BarcodeFormatName): strin
 // ---- Live scanning ----
 
 export type Detection = { rawValue: string; format?: BarcodeFormatName }
-export type Detector = (video: HTMLVideoElement) => Promise<Detection | null>
+// Reads a barcode from a picture, usually just the part of the camera view inside the guide.
+export type Detector = (picture: HTMLCanvasElement) => Promise<Detection | null>
 
 type NativeDetector = { detect(source: CanvasImageSource): Promise<{ rawValue: string; format: string }[]> }
 type NativeDetectorClass = {
@@ -84,8 +85,8 @@ async function createNativeDetector(): Promise<Detector | null> {
   if (!formats.includes('ean_13')) return null
 
   const detector = new NativeBarcodeDetector({ formats })
-  return async (video) => {
-    const [first] = await detector.detect(video)
+  return async (picture) => {
+    const [first] = await detector.detect(picture)
     return first ? { rawValue: first.rawValue, format: first.format as BarcodeFormatName } : null
   }
 }
@@ -105,18 +106,10 @@ async function createZxingDetector(): Promise<Detector> {
   ])
   const hints = new Map([[DecodeHintType.POSSIBLE_FORMATS, [...names.keys()]]])
   const reader = new BrowserMultiFormatOneDReader(hints)
-  const canvas = document.createElement('canvas')
-  const context = canvas.getContext('2d', { willReadFrequently: true })
 
-  return async (video) => {
-    if (!context || !video.videoWidth) return null
-    // Smaller frames decode faster and barcodes stay readable.
-    const scale = Math.min(1, 1280 / video.videoWidth)
-    canvas.width = Math.round(video.videoWidth * scale)
-    canvas.height = Math.round(video.videoHeight * scale)
-    context.drawImage(video, 0, 0, canvas.width, canvas.height)
+  return async (picture) => {
     try {
-      const result = reader.decodeFromCanvas(canvas)
+      const result = reader.decodeFromCanvas(picture)
       return { rawValue: result.getText(), format: names.get(result.getBarcodeFormat()) }
     } catch {
       return null

@@ -720,12 +720,60 @@ button {
   opacity: 0.85;
 }
 
+/* Only barcodes inside this frame are read. */
+.barcode-frame {
+  width: 74%;
+  max-width: 380px;
+  height: 24vh;
+  display: grid;
+  place-items: center;
+  border: 3px solid rgb(255 255 255 / 0.85);
+  border-radius: 16px;
+  box-shadow: 0 0 0 100vmax rgb(0 0 0 / 0.35);
+}
+
 .camera-guide {
-  width: 70%;
-  max-width: 360px;
-  height: 22vh;
+  width: 80%;
+  height: 75%;
   color: #ffffff;
   opacity: 0.3;
+}
+
+/* Shows where you tapped to focus. */
+.focus-ring {
+  position: fixed;
+  width: 72px;
+  height: 72px;
+  margin: -36px 0 0 -36px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: focus-ring 1.2s ease-out forwards;
+}
+
+@keyframes focus-ring {
+  0% {
+    transform: scale(1.4);
+    opacity: 1;
+  }
+  30% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .focus-ring {
+    animation: focus-ring-fade 1.2s linear forwards;
+  }
+  @keyframes focus-ring-fade {
+    to {
+      opacity: 0;
+    }
+  }
 }
 
 .camera-button {
@@ -1355,6 +1403,33 @@ button {
   text-align: right;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+}
+
+.history-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.edit-button {
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--brand-ink);
+  font-size: 0.85rem;
+}
+
+.edit-scan {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 10px;
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--bg);
+}
+
+.edit-scan .shop-row {
+  margin: 0;
 }
 
 .delete-button {

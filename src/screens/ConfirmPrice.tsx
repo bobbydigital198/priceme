@@ -97,7 +97,6 @@ export function ConfirmPrice({ product, reading, onSave, onRetake, onCancel }: P
       unitPriceSource: hasUnit ? (unitTyped ? 'read' : 'calculated') : undefined,
       timestamp: Date.now(),
       rawOcrText: reading?.rawText,
-      tagThumbnail: reading?.thumbnail,
     })
   }
 

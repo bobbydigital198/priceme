@@ -33,8 +33,6 @@ export type Scan = {
   shopId?: number
   // Kept for debugging the price parser.
   rawOcrText?: string
-  // Small compressed JPEG of the tag, as a data URL.
-  tagThumbnail?: string
 }
 
 export type Shop = {
@@ -82,6 +80,19 @@ db.version(2)
       if ((await scans.where('shopId').equals(id).count()) === 0) await tx.table('shops').delete(id)
     }
   })
+
+// Version 3 removes the small tag photos earlier versions kept with each scan, to save space.
+// The price itself is kept. Runs once.
+db.version(3)
+  .stores(SCHEMA)
+  .upgrade((tx) =>
+    tx
+      .table('scans')
+      .toCollection()
+      .modify((scan: Record<string, unknown>) => {
+        delete scan.tagThumbnail
+      }),
+  )
 
 // Asks the browser not to clear our data when the phone is low on space.
 export async function requestPersistentStorage() {

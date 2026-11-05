@@ -131,7 +131,7 @@ try {
   // Storage unavailable; nothing to remove.
 }
 
-// Sends your approximate position to OpenStreetMap's Overpass service (and nowhere else) and
+// Sends your approximate position to an OpenStreetMap Overpass server (and nowhere else) and
 // returns food shops within 150 m, nearest first.
 export async function fetchNearbyShops(latitude: number, longitude: number): Promise<NearbyShop[]> {
   // About 10 m precision is plenty for a 150 m search.
@@ -142,10 +142,29 @@ export async function fetchNearbyShops(latitude: number, longitude: number): Pro
   if (cached) return cached.map((s) => ({ ...s, distance: distanceMetres(lat, lon, s.latitude!, s.longitude!) })).sort((a, b) => a.distance - b.distance)
 
   const query = `[out:json][timeout:15];nwr["shop"~"^(supermarket|convenience|greengrocer)$"](around:${SEARCH_RADIUS_M},${lat},${lon});out center tags;`
+  // The main server is often busy, so a second public server is tried if it fails.
+  let lastError: unknown
+  for (const server of OVERPASS_SERVERS) {
+    try {
+      const elements = await queryOverpass(server, query)
+      const shops = parseOverpass(elements, lat, lon)
+      nearbyCache.set(cacheKey, shops)
+      return shops
+    } catch (error) {
+      lastError = error
+    }
+  }
+  throw lastError
+}
+
+// The main OpenStreetMap search server (FOSSGIS, Germany), then a second public one (Private.coffee).
+export const OVERPASS_SERVERS = ['https://overpass-api.de/api/interpreter', 'https://overpass.private.coffee/api/interpreter']
+
+async function queryOverpass(server: string, query: string): Promise<OverpassElement[]> {
   const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), 20_000)
+  const timer = setTimeout(() => controller.abort(), 12_000)
   try {
-    const response = await fetch('https://overpass-api.de/api/interpreter', {
+    const response = await fetch(server, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: `data=${encodeURIComponent(query)}`,
@@ -153,9 +172,7 @@ export async function fetchNearbyShops(latitude: number, longitude: number): Pro
     })
     if (!response.ok) throw new Error(`OpenStreetMap replied ${response.status}`)
     const json = (await response.json()) as { elements?: OverpassElement[] }
-    const shops = parseOverpass(json.elements ?? [], lat, lon)
-    nearbyCache.set(cacheKey, shops)
-    return shops
+    return json.elements ?? []
   } finally {
     clearTimeout(timer)
   }
