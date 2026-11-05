@@ -1,5 +1,6 @@
 import { formatPrice, formatScanCount, formatScanTime, formatShop, formatUnitPrice } from '../lib/format'
 import type { RecentScan } from '../lib/queries'
+import { currencyOf } from '../lib/region'
 import { ProductThumb } from './ProductThumb'
 
 type Props = { item: RecentScan; onOpen: (barcode: string) => void }
@@ -7,6 +8,7 @@ type Props = { item: RecentScan; onOpen: (barcode: string) => void }
 export function ScanRow({ item, onOpen }: Props) {
   const { scan, product, shop, productScanCount } = item
   const name = product?.name ?? `Unknown product (${scan.barcode})`
+  const currency = currencyOf(scan)
 
   return (
     <li>
@@ -24,10 +26,10 @@ export function ScanRow({ item, onOpen }: Props) {
         </div>
 
         <div className="scan-row-price">
-          <div className="scan-row-amount">{formatPrice(scan.price)}</div>
+          <div className="scan-row-amount">{formatPrice(scan.price, currency)}</div>
           {scan.unitPrice !== undefined && scan.unitBasis && (
             <div className="scan-row-unit">
-              {formatUnitPrice(scan.unitPrice, scan.unitBasis)}
+              {formatUnitPrice(scan.unitPrice, scan.unitBasis, currency)}
               {scan.unitPriceSource === 'calculated' && <span className="calc-tag">calc.</span>}
             </div>
           )}

@@ -1074,6 +1074,11 @@ button {
   font-weight: 600;
 }
 
+/* Product page: switch between currencies when a product has prices in more than one. */
+.currency-chips {
+  margin: 4px 0 14px;
+}
+
 .basis-toggle button.selected {
   background: var(--accent);
   color: var(--accent-text);

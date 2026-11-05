@@ -2,33 +2,64 @@
 // "Find shops near me"; otherwise this uses your last scan, the tag text and your saved shops.
 import { SHOP_SESSION_MINUTES } from './constants'
 import { db, type Shop } from './db'
+import { getRegion, type Country } from './region'
 
 // Saves a shop and returns its id. An OpenStreetMap shop already saved is reused, not duplicated.
 export async function saveShop(shop: Omit<Shop, 'id' | 'lastUsed'>): Promise<number> {
   const existing = shop.osmId ? await db.shops.where('osmId').equals(shop.osmId).first() : undefined
   if (existing?.id !== undefined) return existing.id
-  return (await db.shops.add({ ...shop, lastUsed: Date.now() })) as number
+  // A new shop takes your default currency unless one is given.
+  return (await db.shops.add({ currency: getRegion().currency, ...shop, lastUsed: Date.now() })) as number
 }
 
-// Paris supermarket chains, longest names first so "Carrefour City" wins over a plain match.
-export const CHAINS = [
-  'Carrefour Express',
-  'Carrefour Market',
-  'Carrefour City',
-  'Leader Price',
-  'Intermarché',
-  'Naturalia',
-  'U Express',
-  'Franprix',
-  'Monoprix',
-  "Monop'",
-  'Auchan',
-  'Casino',
-  'Picard',
-  'Lidl',
-  'Aldi',
-  'G20',
-]
+// Supermarket chains by country, longest names first so "Carrefour City" wins over a plain match.
+export const CHAINS_BY_COUNTRY: Record<Country, string[]> = {
+  FR: [
+    'Carrefour Express',
+    'Carrefour Market',
+    'Carrefour City',
+    'Leader Price',
+    'Intermarché',
+    'Naturalia',
+    'U Express',
+    'Franprix',
+    'Monoprix',
+    "Monop'",
+    'Auchan',
+    'Casino',
+    'Picard',
+    'Lidl',
+    'Aldi',
+    'G20',
+  ],
+  GB: [
+    "Sainsbury's Local",
+    'Little Waitrose',
+    'Marks & Spencer',
+    'Tesco Express',
+    'Tesco Extra',
+    'Tesco Metro',
+    "Sainsbury's",
+    'Morrisons',
+    'Waitrose',
+    'Iceland',
+    'M&S Food',
+    'Tesco',
+    'Asda',
+    'Co-op',
+    'Aldi',
+    'Lidl',
+    'M&S',
+  ],
+}
+
+// The chains for the country chosen in Settings.
+export function chainsFor(country: Country = getRegion().country): string[] {
+  return CHAINS_BY_COUNTRY[country]
+}
+
+// Every chain, for names that come from OpenStreetMap, which are reliable in any country.
+const ALL_CHAINS = [...new Set(Object.values(CHAINS_BY_COUNTRY).flat())].sort((a, b) => b.length - a.length)
 
 const simplify = (text: string) =>
   text
@@ -38,11 +69,15 @@ const simplify = (text: string) =>
     .replace(/[’`]/g, "'")
 
 // Finds a chain name in OCR text or an OpenStreetMap name. Never relied on alone.
-export function detectChain(text: string | undefined): string | undefined {
+export function detectChain(text: string | undefined, chains: string[] = ALL_CHAINS): string | undefined {
   if (!text) return undefined
   const simple = simplify(text)
-  return CHAINS.find((chain) => {
-    const name = simplify(chain).replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/'$/, "'?")
+  return chains.find((chain) => {
+    // Apostrophes and hyphens are optional, so "SAINSBURYS" and "COOP" still match.
+    const name = simplify(chain)
+      .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      .replace(/'/g, "'?")
+      .replace(/-/g, '-?')
     return new RegExp(`(^|[^a-z0-9])${name}(?![a-z0-9])`).test(simple)
   })
 }

@@ -6,7 +6,8 @@ import { db, type Product, type Scan, type Shop } from '../lib/db'
 import { formatAmountInput, formatPrice, formatShop, parseAmountInput } from '../lib/format'
 import type { TagReading } from '../lib/ocr'
 import { computeUnitPrice, MAX_PRICE, MAX_UNIT_PRICE, type UnitBasis } from '../lib/priceParser'
-import { detectChain, suggestShop } from '../lib/shops'
+import { CURRENCIES, currencyOf, useRegion } from '../lib/region'
+import { chainsFor, detectChain, suggestShop } from '../lib/shops'
 
 type Props = {
   product: Product
@@ -41,15 +42,24 @@ export function ConfirmPrice({ product, reading, onSave, onRetake, onCancel }: P
   const shops = useLiveQuery(() => db.shops.toArray())
   const lastScan = useLiveQuery(async () => ({ scan: await db.scans.orderBy('timestamp').last() }))
   const shopById = new Map((shops ?? []).map((s): [number, Shop] => [s.id!, s]))
-  const chain = detectChain(reading?.rawText)
+  // Only chains in your country are looked for on the tag, to avoid false matches.
+  const chain = detectChain(reading?.rawText, chainsFor())
   const suggestion = shops && lastScan ? suggestShop(lastScan.scan, shops, chain) : undefined
   const [chosenShopId, setChosenShopId] = useState<number>()
   const [picking, setPicking] = useState(false)
   const shopId = chosenShopId ?? suggestion?.shopId
   const shop = shopId === undefined ? undefined : shopById.get(shopId)
+  // The price is in the shop's currency (your default until a shop is chosen).
+  const region = useRegion()
+  const currency = shop ? currencyOf(shop) : region.currency
+  const symbol = CURRENCIES[currency].symbol
+  // Only earlier prices in the same currency are compared.
+  const sameCurrencyScans = scans?.filter((s) => currencyOf(s) === currency)
 
   const price = parseAmountInput(priceText)
-  const priceError = price === undefined ? 'Enter the price, e.g. 3,49' : price > MAX_PRICE ? `That's over ${MAX_PRICE} €. Check the price.` : ''
+  const example = currency === 'GBP' ? '3.49' : '3,49'
+  const priceError =
+    price === undefined ? `Enter the price, e.g. ${example}` : price > MAX_PRICE ? `That's over ${formatPrice(MAX_PRICE, currency)}. Check the price.` : ''
 
   const calculated =
     !unitTyped && price !== undefined && product.quantityValue && product.quantityUnit
@@ -60,7 +70,7 @@ export function ConfirmPrice({ product, reading, onSave, onRetake, onCancel }: P
   const unitError =
     unitTyped && unitText.trim() !== ''
       ? unitPrice === undefined
-        ? 'Enter the price per kilo or litre, e.g. 11,56'
+        ? `Enter the price per kilo or litre, e.g. ${currency === 'GBP' ? '11.56' : '11,56'}`
         : unitPrice > MAX_UNIT_PRICE
           ? 'That price per kilo or litre looks too high.'
           : !unitBasis
@@ -91,6 +101,7 @@ export function ConfirmPrice({ product, reading, onSave, onRetake, onCancel }: P
     onSave({
       barcode: product.barcode,
       shopId,
+      currency,
       price,
       unitPrice: hasUnit ? unitPrice : undefined,
       unitBasis: hasUnit ? unitBasis : undefined,
@@ -153,12 +164,12 @@ export function ConfirmPrice({ product, reading, onSave, onRetake, onCancel }: P
                 inputMode="decimal"
                 autoComplete="off"
                 autoFocus={!trusted}
-                placeholder="0,00"
+                placeholder={currency === 'GBP' ? '0.00' : '0,00'}
                 value={priceText}
                 onChange={(e) => setPriceText(e.target.value)}
                 aria-invalid={showErrors && !!priceError}
               />
-              <span aria-hidden="true">€</span>
+              <span aria-hidden="true">{symbol}</span>
             </span>
           </label>
 
@@ -171,7 +182,7 @@ export function ConfirmPrice({ product, reading, onSave, onRetake, onCancel }: P
               type="text"
               inputMode="decimal"
               autoComplete="off"
-              placeholder={calculated ? formatAmountInput(calculated.unitPrice) : 'optional'}
+              placeholder={calculated ? formatAmountInput(calculated.unitPrice, currency) : 'optional'}
               value={unitTyped ? unitText : ''}
               onChange={(e) => {
                 setUnitText(e.target.value)
@@ -199,8 +210,8 @@ export function ConfirmPrice({ product, reading, onSave, onRetake, onCancel }: P
           <div className="suggestions">
             <span className="product-sub">{trusted ? 'Other prices on the tag:' : 'Possibly:'}</span>
             {suggestions.map((s) => (
-              <button key={s} type="button" className="chip" onClick={() => setPriceText(formatAmountInput(s))}>
-                {formatPrice(s)}
+              <button key={s} type="button" className="chip" onClick={() => setPriceText(formatAmountInput(s, currency))}>
+                {formatPrice(s, currency)}
               </button>
             ))}
           </div>
@@ -209,7 +220,7 @@ export function ConfirmPrice({ product, reading, onSave, onRetake, onCancel }: P
         {reading && <img className="reading-image" src={reading.thumbnail} alt="The price tag photo" />}
 
         <h2 className="comparison-heading">Compared with before</h2>
-        {scans && <PriceComparison scans={scans} shops={shopById} shopId={shopId} current={price} />}
+        {sameCurrencyScans && <PriceComparison scans={sameCurrencyScans} shops={shopById} shopId={shopId} current={price} currency={currency} />}
 
         <div className="button-row">
           <button type="submit" className="primary-button">

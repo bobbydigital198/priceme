@@ -53,8 +53,12 @@ export async function deleteAllData() {
   clearNearbyCache()
 }
 
-export async function updateShop(id: number, changes: Pick<Shop, 'name' | 'address' | 'chain'>) {
-  await db.shops.update(id, changes)
+// A shop has one currency, so changing it also changes the currency of the scans saved there.
+export async function updateShop(id: number, changes: Pick<Shop, 'name' | 'address' | 'chain' | 'currency'>) {
+  await db.transaction('rw', db.shops, db.scans, async () => {
+    await db.shops.update(id, changes)
+    if (changes.currency) await db.scans.where('shopId').equals(id).modify({ currency: changes.currency })
+  })
 }
 
 export async function setFavourite(id: number, favourite: boolean) {

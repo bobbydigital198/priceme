@@ -1,5 +1,7 @@
 // Numbers for the Shops section: how often you go, and whether each shop is cheap for you.
-type ScanLike = { barcode: string; price: number; timestamp: number; shopId?: number }
+import { currencyOf, type Currency } from './region'
+
+type ScanLike = { barcode: string; price: number; timestamp: number; shopId?: number; currency?: Currency }
 
 export type ShopSummary = { scans: number; products: number; visits: number; lastVisit: number }
 
@@ -30,7 +32,7 @@ export function summariseShops(scans: ScanLike[]): Map<number, ShopSummary> {
 export type ShopProduct<T> = {
   barcode: string
   latestHere: T
-  // Average of what you paid for it at other shops; undefined if you've only bought it here.
+  // Average of what you paid for it at other shops, in the same currency; undefined if you've only bought it here.
   averageElsewhere?: number
 }
 
@@ -44,7 +46,9 @@ export function productsAtShop<T extends ScanLike>(shopId: number, scans: T[]): 
   }
   return [...latest.values()]
     .map((latestHere) => {
-      const elsewhere = scans.filter((s) => s.barcode === latestHere.barcode && s.shopId !== shopId)
+      const elsewhere = scans.filter(
+        (s) => s.barcode === latestHere.barcode && s.shopId !== shopId && currencyOf(s) === currencyOf(latestHere),
+      )
       const averageElsewhere = elsewhere.length
         ? Math.round((elsewhere.reduce((sum, s) => sum + s.price, 0) / elsewhere.length) * 100) / 100
         : undefined

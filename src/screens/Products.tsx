@@ -5,6 +5,7 @@ import { ProductThumb } from '../components/ProductThumb'
 import { CATEGORIES, categorise, type CategoryId } from '../lib/categories'
 import { db, type Product, type Scan } from '../lib/db'
 import { formatPrice, formatScanCount } from '../lib/format'
+import { currencyOf } from '../lib/region'
 import { fetchCategoryTags } from '../lib/openFoodFacts'
 
 type Props = { onOpenMenu: () => void; onOpenProduct: (barcode: string) => void }
@@ -115,7 +116,7 @@ export function Products({ onOpenMenu, onOpenProduct }: Props) {
                               {product.name}
                               <span className="product-sub small">{[product.brand, formatScanCount(count)].filter(Boolean).join(' · ')}</span>
                             </span>
-                            <span className="history-price">{formatPrice(latest.price)}</span>
+                            <span className="history-price">{formatPrice(latest.price, currencyOf(latest))}</span>
                           </button>
                         </li>
                       ))}

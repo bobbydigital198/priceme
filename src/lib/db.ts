@@ -1,5 +1,6 @@
 import Dexie, { type EntityTable } from 'dexie'
 import type { CategoryId } from './categories'
+import type { Currency } from './region'
 
 export type Product = {
   barcode: string
@@ -31,6 +32,8 @@ export type Scan = {
   unitPriceSource?: 'read' | 'calculated'
   timestamp: number
   shopId?: number
+  // The shop's currency when the scan was saved; missing on older scans, which were all in euros.
+  currency?: Currency
   // Kept for debugging the price parser.
   rawOcrText?: string
 }
@@ -48,6 +51,8 @@ export type Shop = {
   lastUsed: number
   // Starred by you: listed first when choosing a shop, and under Favourites in Shops.
   favourite?: boolean
+  // Prices here are in this currency; missing on older shops, which were all in euros.
+  currency?: Currency
 }
 
 export const db = new Dexie('priceme') as Dexie & {

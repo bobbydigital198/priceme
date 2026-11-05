@@ -2,7 +2,8 @@ import { useState, type FormEvent } from 'react'
 import { deleteShop, mergeShops, updateShop } from '../lib/dataAdmin'
 import type { Shop } from '../lib/db'
 import { formatShop } from '../lib/format'
-import { CHAINS } from '../lib/shops'
+import { CURRENCIES, currencyOf, type Currency } from '../lib/region'
+import { chainsFor } from '../lib/shops'
 
 type Props = {
   shop: Shop
@@ -20,13 +21,14 @@ export function ShopEditor({ shop, scanCount, others, onSaved, onRemoved }: Prop
   const [name, setName] = useState(shop.name)
   const [address, setAddress] = useState(shop.address ?? '')
   const [chain, setChain] = useState(shop.chain ?? '')
+  const [currency, setCurrency] = useState<Currency>(currencyOf(shop))
   const [mergeInto, setMergeInto] = useState('')
   const [confirm, setConfirm] = useState<'merge' | 'delete'>()
   const target = others.find((s) => String(s.id) === mergeInto)
 
   async function save(event: FormEvent) {
     event.preventDefault()
-    await updateShop(shop.id!, { name: name.trim(), address: address.trim() || undefined, chain: chain.trim() || undefined })
+    await updateShop(shop.id!, { name: name.trim(), address: address.trim() || undefined, chain: chain.trim() || undefined, currency })
     onSaved()
   }
 
@@ -44,11 +46,27 @@ export function ShopEditor({ shop, scanCount, others, onSaved, onRemoved }: Prop
         <span>Chain (optional)</span>
         <input type="text" list="editor-chains" value={chain} onChange={(e) => setChain(e.target.value)} />
         <datalist id="editor-chains">
-          {CHAINS.map((c) => (
+          {chainsFor().map((c) => (
             <option key={c} value={c} />
           ))}
         </datalist>
       </label>
+      <label className="field">
+        <span>Currency</span>
+        <select value={currency} onChange={(e) => setCurrency(e.target.value as Currency)}>
+          {(Object.keys(CURRENCIES) as Currency[]).map((c) => (
+            <option key={c} value={c}>
+              {CURRENCIES[c].symbol} {CURRENCIES[c].name}
+            </option>
+          ))}
+        </select>
+      </label>
+      {currency !== currencyOf(shop) && scanCount > 0 && (
+        <p className="product-sub small">
+          {scanCount === 1 ? 'The 1 scan' : `The ${scansLabel(scanCount)}`} saved here will change to {CURRENCIES[currency].name.toLowerCase()} too.
+          The amounts stay the same.
+        </p>
+      )}
       <div className="button-row">
         <button type="submit" className="primary-button" disabled={!name.trim()}>
           Save changes

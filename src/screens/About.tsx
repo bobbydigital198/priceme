@@ -59,7 +59,8 @@ export function About({ onOpenMenu }: Props) {
             Each scan: the price, the price per kilo or litre, the date and time, the shop and the text read from the price
             tag. The tag photo itself is only used while reading it, and isn't kept.
           </li>
-          <li>Your shops: name, street and chain, plus the shop's location if you found it with "Find shops near me".</li>
+          <li>Your shops: name, street, chain and currency, plus the shop's location if you found it with "Find shops near me".</li>
+          <li>Your settings: light or dark mode, and your country and default currency.</li>
         </ul>
 
         <h3>What leaves your phone</h3>

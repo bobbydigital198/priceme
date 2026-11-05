@@ -1,6 +1,7 @@
 import { PRICE_WARNING_THRESHOLD } from '../lib/constants'
 import type { Scan, Shop } from '../lib/db'
 import { formatDaysAgo, formatDifference, formatPrice, formatShop } from '../lib/format'
+import type { Currency } from '../lib/region'
 import { isAboveUsual, priceDifference, summariseHistory } from '../lib/stats'
 
 type Props = {
@@ -9,10 +10,12 @@ type Props = {
   // The shop this scan is being saved for, if chosen.
   shopId?: number
   current?: number
+  // All the scans given are in this currency.
+  currency?: Currency
 }
 
 // How the price you're about to save compares with what you've paid before.
-export function PriceComparison({ scans, shops, shopId, current }: Props) {
+export function PriceComparison({ scans, shops, shopId, current, currency = 'EUR' }: Props) {
   const history = summariseHistory(scans)
   if (!history.last || !history.lowest || history.average === undefined) {
     return <p className="product-sub">First time you've scanned this product, so there's nothing to compare yet.</p>
@@ -49,9 +52,9 @@ export function PriceComparison({ scans, shops, shopId, current }: Props) {
                 {row.label}
                 <span>{row.note}</span>
               </th>
-              <td>{formatPrice(row.price)}</td>
+              <td>{formatPrice(row.price, currency)}</td>
               <td className={current === undefined ? '' : current > row.price ? 'diff-up' : current < row.price ? 'diff-down' : ''}>
-                {current === undefined ? '' : formatDifference(priceDifference(current, row.price))}
+                {current === undefined ? '' : formatDifference(priceDifference(current, row.price), currency)}
               </td>
             </tr>
           ))}

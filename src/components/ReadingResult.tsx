@@ -37,7 +37,7 @@ export function ReadingResult({ reading, product }: Props) {
       <p className={`confidence confidence-${parsed.confidence}`}>{CONFIDENCE_TEXT[parsed.confidence]}</p>
 
       {parsed.alternatives.length > 0 && (
-        <p className="product-sub">Other prices on the tag: {parsed.alternatives.map(formatPrice).join(', ')}</p>
+        <p className="product-sub">Other prices on the tag: {parsed.alternatives.map((p) => formatPrice(p)).join(', ')}</p>
       )}
       {parsed.warnings.map((w) => (
         <p key={w} className="product-sub">

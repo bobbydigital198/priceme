@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Shop } from './db'
-import { detectChain, distanceMetres, parseOverpass, suggestShop } from './shops'
+import { chainsFor, detectChain, distanceMetres, parseOverpass, suggestShop } from './shops'
 
 describe('detectChain', () => {
   it.each([
@@ -16,6 +16,24 @@ describe('detectChain', () => {
     ['Leader Price', 'Leader Price'],
   ])('finds the chain in %j', (text, chain) => {
     expect(detectChain(text)).toBe(chain)
+  })
+
+  it.each([
+    ["SAINSBURY'S Local", "Sainsbury's Local"],
+    ['Sainsburys', "Sainsbury's"],
+    ['TESCO Express', 'Tesco Express'],
+    ['tesco', 'Tesco'],
+    ['COOP', 'Co-op'],
+    ['M&S Food Hall', 'M&S Food'],
+    ['Waitrose & Partners', 'Waitrose'],
+  ])('finds the UK chain in %j', (text, chain) => {
+    expect(detectChain(text, chainsFor('GB'))).toBe(chain)
+  })
+
+  it('only looks for the chosen country’s chains on tags', () => {
+    expect(detectChain('TESCO', chainsFor('FR'))).toBeUndefined()
+    expect(detectChain('Franprix', chainsFor('GB'))).toBeUndefined()
+    expect(detectChain('Lidl', chainsFor('GB'))).toBe('Lidl')
   })
 
   it('ignores chain names inside other words', () => {

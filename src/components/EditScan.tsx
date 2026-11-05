@@ -1,8 +1,9 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useState, type FormEvent } from 'react'
 import { db, type Product, type Scan } from '../lib/db'
-import { formatAmountInput, formatShop, parseAmountInput } from '../lib/format'
+import { formatAmountInput, formatPrice, formatShop, parseAmountInput } from '../lib/format'
 import { computeUnitPrice, MAX_PRICE, MAX_UNIT_PRICE } from '../lib/priceParser'
+import { CURRENCIES, currencyOf } from '../lib/region'
 import { ShopPicker } from './ShopPicker'
 
 type Props = { scan: Scan; product?: Product; onDone: () => void }
@@ -10,17 +11,21 @@ type Props = { scan: Scan; product?: Product; onDone: () => void }
 // Correct a saved scan: its price, price per kilo or litre, and shop. The date stays the same.
 export function EditScan({ scan, product, onDone }: Props) {
   const wasCalculated = scan.unitPriceSource === 'calculated'
-  const [priceText, setPriceText] = useState(formatAmountInput(scan.price))
+  const [priceText, setPriceText] = useState(formatAmountInput(scan.price, currencyOf(scan)))
   // A worked-out unit price keeps following the price until you type your own.
   const [unitTyped, setUnitTyped] = useState(!wasCalculated)
-  const [unitText, setUnitText] = useState(scan.unitPrice !== undefined && !wasCalculated ? formatAmountInput(scan.unitPrice) : '')
+  const [unitText, setUnitText] = useState(scan.unitPrice !== undefined && !wasCalculated ? formatAmountInput(scan.unitPrice, currencyOf(scan)) : '')
   const [shopId, setShopId] = useState(scan.shopId)
   const [picking, setPicking] = useState(false)
   const [showErrors, setShowErrors] = useState(false)
   const shop = useLiveQuery(() => (shopId === undefined ? undefined : db.shops.get(shopId)), [shopId])
+  // Moving the scan to another shop gives it that shop's currency.
+  const currency = shop ? currencyOf(shop) : currencyOf(scan)
 
   const price = parseAmountInput(priceText)
-  const priceError = price === undefined ? 'Enter the price, e.g. 3,49' : price > MAX_PRICE ? `That's over ${MAX_PRICE} €. Check the price.` : ''
+  const example = currency === 'GBP' ? '3.49' : '3,49'
+  const priceError =
+    price === undefined ? `Enter the price, e.g. ${example}` : price > MAX_PRICE ? `That's over ${formatPrice(MAX_PRICE, currency)}. Check the price.` : ''
 
   const canCalculate = !!product?.quantityValue && !!product.quantityUnit
   const basis = scan.unitBasis ?? (product?.quantityUnit === 'g' ? 'kg' : product?.quantityUnit === 'ml' ? 'L' : undefined)
@@ -33,7 +38,7 @@ export function EditScan({ scan, product, onDone }: Props) {
   const unitError =
     unitTyped && unitText.trim() !== ''
       ? unitPrice === undefined
-        ? 'Enter the price per kilo or litre, e.g. 11,56'
+        ? `Enter the price per kilo or litre, e.g. ${currency === 'GBP' ? '11.56' : '11,56'}`
         : unitPrice > MAX_UNIT_PRICE
           ? 'That price per kilo or litre looks too high.'
           : ''
@@ -49,6 +54,7 @@ export function EditScan({ scan, product, onDone }: Props) {
     await db.scans.update(scan.id!, {
       price,
       shopId,
+      currency,
       unitPrice: hasUnit ? unitPrice : undefined,
       unitBasis: hasUnit ? unitBasis : undefined,
       unitPriceSource: hasUnit ? (unitTyped ? 'read' : 'calculated') : undefined,
@@ -82,7 +88,7 @@ export function EditScan({ scan, product, onDone }: Props) {
               onChange={(e) => setPriceText(e.target.value)}
               aria-invalid={showErrors && !!priceError}
             />
-            <span aria-hidden="true">€</span>
+            <span aria-hidden="true">{CURRENCIES[currency].symbol}</span>
           </span>
         </label>
 
@@ -96,7 +102,7 @@ export function EditScan({ scan, product, onDone }: Props) {
               type="text"
               inputMode="decimal"
               autoComplete="off"
-              placeholder={calculated ? formatAmountInput(calculated.unitPrice) : 'optional'}
+              placeholder={calculated ? formatAmountInput(calculated.unitPrice, currency) : 'optional'}
               value={unitTyped ? unitText : ''}
               onChange={(e) => {
                 setUnitText(e.target.value)

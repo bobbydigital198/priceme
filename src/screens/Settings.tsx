@@ -5,6 +5,7 @@ import { canShareFiles, deleteAllData, downloadFile, exportBackup, restoreBackup
 import { isIos } from '../lib/platform'
 import { db } from '../lib/db'
 import { formatScanDay } from '../lib/format'
+import { COUNTRIES, CURRENCIES, setRegion, useRegion, type Country, type Currency } from '../lib/region'
 import { setThemeChoice, useThemeChoice, type ThemeChoice } from '../lib/theme'
 
 type Props = { onBack: () => void; onOpenOcrTest: () => void }
@@ -25,6 +26,7 @@ export function Settings({ onBack, onOpenOcrTest }: Props) {
       <h1 className="product-name">Settings</h1>
 
       <AppearanceSection />
+      <RegionSection />
       <BackupSection scanCount={counts?.scans ?? 0} />
 
       <section className="card">
@@ -41,6 +43,49 @@ export function Settings({ onBack, onOpenOcrTest }: Props) {
 
       <p className="app-version">Version {__APP_VERSION__}</p>
     </main>
+  )
+}
+
+// ---- Country and currency ----
+
+function RegionSection() {
+  const region = useRegion()
+  return (
+    <section className="card">
+      <h2 className="card-heading">Country and currency</h2>
+      <label className="field">
+        <span>Country</span>
+        <select
+          value={region.country}
+          onChange={(e) => {
+            const country = e.target.value as Country
+            // A new country brings its own currency; it can still be changed below.
+            setRegion({ country, currency: COUNTRIES[country].currency })
+          }}
+        >
+          {(Object.keys(COUNTRIES) as Country[]).map((c) => (
+            <option key={c} value={c}>
+              {COUNTRIES[c].name}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="field">
+        <span>Default currency</span>
+        <select value={region.currency} onChange={(e) => setRegion({ ...region, currency: e.target.value as Currency })}>
+          {(Object.keys(CURRENCIES) as Currency[]).map((c) => (
+            <option key={c} value={c}>
+              {CURRENCIES[c].symbol} {CURRENCIES[c].name}
+            </option>
+          ))}
+        </select>
+      </label>
+      <p className="product-sub small">
+        The country decides which supermarket chains PrixIt suggests and looks for on price tags. New shops get the
+        default currency. Each shop keeps its own currency (you can change it on the shop's page), so prices in
+        different currencies are never mixed.
+      </p>
+    </section>
   )
 }
 

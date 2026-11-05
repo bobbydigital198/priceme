@@ -3,6 +3,7 @@ import { Line } from 'react-chartjs-2'
 import { CHART_INK } from '../lib/chartColours'
 import type { Scan } from '../lib/db'
 import { formatPrice, formatScanTime, formatUnitPrice } from '../lib/format'
+import type { Currency } from '../lib/region'
 
 ChartJS.register(LineController, LineElement, PointElement, LinearScale, Tooltip)
 
@@ -11,7 +12,7 @@ export type ChartSeries = { key: string; label: string; colour: string; scans: S
 const dayMonth = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short' })
 
 // Price over time, one line per shop.
-export function PriceChart({ series, dark }: { series: ChartSeries[]; dark: boolean }) {
+export function PriceChart({ series, dark, currency = 'EUR' }: { series: ChartSeries[]; dark: boolean; currency?: Currency }) {
   const ink = dark ? CHART_INK.dark : CHART_INK.light
 
   const data = {
@@ -49,7 +50,7 @@ export function PriceChart({ series, dark }: { series: ChartSeries[]; dark: bool
         grace: '15%',
         grid: { color: ink.grid },
         border: { display: false },
-        ticks: { color: ink.muted, maxTicksLimit: 5, callback: (value) => formatPrice(Number(value)) },
+        ticks: { color: ink.muted, maxTicksLimit: 5, callback: (value) => formatPrice(Number(value), currency) },
       },
     },
     plugins: {
@@ -62,10 +63,10 @@ export function PriceChart({ series, dark }: { series: ChartSeries[]; dark: bool
         boxPadding: 4,
         callbacks: {
           title: (items) => formatScanTime(Number(items[0].parsed.x)),
-          label: (item) => `${item.dataset.label}: ${formatPrice(Number(item.parsed.y))}`,
+          label: (item) => `${item.dataset.label}: ${formatPrice(Number(item.parsed.y), currency)}`,
           afterLabel: (item) => {
             const scan = (item.raw as { scan: Scan }).scan
-            return scan.unitPrice !== undefined && scan.unitBasis ? formatUnitPrice(scan.unitPrice, scan.unitBasis) : ''
+            return scan.unitPrice !== undefined && scan.unitBasis ? formatUnitPrice(scan.unitPrice, scan.unitBasis, currency) : ''
           },
         },
       },

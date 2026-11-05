@@ -1,35 +1,39 @@
-// Display helpers. Prices use the French style seen on tags ("3,49 €"); everything else is UK English.
+// Display helpers. Euro prices use the French style seen on tags ("3,49 €"), pounds the UK style
+// ("£3.49"); everything else is UK English.
+import type { Currency } from './region'
 
+// A non-breaking space, so "3,49 €" never splits across lines.
 const NBSP = ' '
 
-export function formatPrice(euros: number): string {
-  return `${euros.toFixed(2).replace('.', ',')}${NBSP}€`
+export function formatPrice(amount: number, currency: Currency = 'EUR'): string {
+  if (currency === 'GBP') return `£${amount.toFixed(2)}`
+  return `${amount.toFixed(2).replace('.', ',')}${NBSP}€`
 }
 
-export function formatUnitPrice(euros: number, basis: 'kg' | 'L'): string {
-  return `${formatPrice(euros)}/${basis}`
+export function formatUnitPrice(amount: number, basis: 'kg' | 'L', currency: Currency = 'EUR'): string {
+  return `${formatPrice(amount, currency)}/${basis}`
 }
 
 // "+0,45 €" or "-0,30 €".
-export function formatSignedPrice(euros: number): string {
-  return `${euros > 0 ? '+' : euros < 0 ? '-' : ''}${formatPrice(Math.abs(euros))}`
+export function formatSignedPrice(amount: number, currency: Currency = 'EUR'): string {
+  return `${amount > 0 ? '+' : amount < 0 ? '-' : ''}${formatPrice(Math.abs(amount), currency)}`
 }
 
 // "+0,45 € (+15%)", "-0,30 € (-10%)" or "Same price".
-export function formatDifference({ euros, percent }: { euros: number; percent: number }): string {
+export function formatDifference({ euros, percent }: { euros: number; percent: number }, currency: Currency = 'EUR'): string {
   if (euros === 0) return 'Same price'
   const sign = euros > 0 ? '+' : '-'
-  return `${sign}${formatPrice(Math.abs(euros))} (${sign}${Math.abs(percent)}%)`
+  return `${sign}${formatPrice(Math.abs(euros), currency)} (${sign}${Math.abs(percent)}%)`
 }
 
-// Number as typed in a price box: "3,49".
-export function formatAmountInput(euros: number): string {
-  return euros.toFixed(2).replace('.', ',')
+// Number as typed in a price box: "3,49" for euros, "3.49" for pounds.
+export function formatAmountInput(amount: number, currency: Currency = 'EUR'): string {
+  return currency === 'GBP' ? amount.toFixed(2) : amount.toFixed(2).replace('.', ',')
 }
 
-// Reads a typed price: "3,49", "3.49", "3,49 €" or "3". Undefined if it isn't a price.
+// Reads a typed price: "3,49", "3.49", "3,49 €", "£3.49" or "3". Undefined if it isn't a price.
 export function parseAmountInput(text: string): number | undefined {
-  const cleaned = text.replace(/[€\s]/g, '').replace(',', '.')
+  const cleaned = text.replace(/[€£\s]/g, '').replace(',', '.')
   if (!/^\d{1,4}(\.\d{0,2})?$/.test(cleaned)) return undefined
   const value = Math.round(Number(cleaned) * 100) / 100
   return value > 0 ? value : undefined

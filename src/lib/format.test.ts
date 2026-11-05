@@ -25,6 +25,14 @@ describe('formatPrice', () => {
   it('rounds to cents', () => {
     expect(formatPrice(2.999)).toBe(`3,00${nbsp}€`)
   })
+
+  it('writes pounds the UK way', () => {
+    expect(formatPrice(3.49, 'GBP')).toBe('£3.49')
+    expect(formatUnitPrice(11.5, 'kg', 'GBP')).toBe('£11.50/kg')
+    expect(formatSignedPrice(-0.3, 'GBP')).toBe('-£0.30')
+    expect(formatAmountInput(3.4, 'GBP')).toBe('3.40')
+    expect(parseAmountInput('£3.49')).toBe(3.49)
+  })
 })
 
 describe('formatUnitPrice', () => {

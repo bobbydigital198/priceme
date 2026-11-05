@@ -4,7 +4,7 @@ import { favouritesFirst } from '../lib/dataAdmin'
 import { db } from '../lib/db'
 import { formatShop } from '../lib/format'
 import { OsmCredit } from './Credits'
-import { CHAINS, fetchNearbyShops, getPosition, saveShop, type NearbyShop } from '../lib/shops'
+import { chainsFor, fetchNearbyShops, getPosition, saveShop, type NearbyShop } from '../lib/shops'
 
 type Props = {
   title?: string
@@ -112,7 +112,7 @@ export function ShopPicker({ title = 'Which shop?', showSaved = true, currentId,
             <span>Chain (optional)</span>
             <input type="text" list="chains" value={newChain} onChange={(e) => setNewChain(e.target.value)} />
             <datalist id="chains">
-              {CHAINS.map((c) => (
+              {chainsFor().map((c) => (
                 <option key={c} value={c} />
               ))}
             </datalist>

@@ -8,6 +8,7 @@ import { CATEGORIES, categorise, type CategoryId } from '../lib/categories'
 import { shopColour } from '../lib/chartColours'
 import { db, type Scan, type Shop } from '../lib/db'
 import { formatDaysAgo, formatPrice, formatScanTime, formatShop, formatSignedPrice, formatUnitPrice } from '../lib/format'
+import { CURRENCIES, currencyOf, type Currency } from '../lib/region'
 import { useDarkMode } from '../lib/theme'
 import { breakdownByShop, priceDifference, shopsInFirstSeenOrder, summariseProduct } from '../lib/stats'
 
@@ -19,7 +20,13 @@ const keyOf = (shopId?: number) => (shopId === undefined ? NO_SHOP : String(shop
 // Everything about one product: stats, price chart, per-shop breakdown and every scan.
 export function ProductDetail({ barcode, onBack }: Props) {
   const product = useLiveQuery(() => db.products.get(barcode), [barcode])
-  const scans = useLiveQuery(() => db.scans.where('barcode').equals(barcode).toArray(), [barcode])
+  const allScans = useLiveQuery(() => db.scans.where('barcode').equals(barcode).toArray(), [barcode])
+  // Prices in different currencies are never mixed: the page shows one currency at a time,
+  // starting with the currency of your latest scan.
+  const currencies = [...new Set([...(allScans ?? [])].sort((a, b) => b.timestamp - a.timestamp).map(currencyOf))]
+  const [chosenCurrency, setChosenCurrency] = useState<Currency>()
+  const currency = chosenCurrency && currencies.includes(chosenCurrency) ? chosenCurrency : (currencies[0] ?? 'EUR')
+  const scans = allScans?.filter((s) => currencyOf(s) === currency)
   const shops = useLiveQuery(() => db.shops.toArray())
   const dark = useDarkMode()
   const [hidden, setHidden] = useState<Set<string>>(new Set())
@@ -96,23 +103,33 @@ export function ProductDetail({ barcode, onBack }: Props) {
         </label>
       )}
 
+      {currencies.length > 1 && (
+        <div className="sort-chips currency-chips" role="group" aria-label="Show prices in">
+          {currencies.map((c) => (
+            <button key={c} type="button" className={c === currency ? 'selected' : ''} aria-pressed={c === currency} onClick={() => setChosenCurrency(c)}>
+              {CURRENCIES[c].symbol} {CURRENCIES[c].name}
+            </button>
+          ))}
+        </div>
+      )}
+
       {scans && !summary && <p className="placeholder-note">No scans of this product left.</p>}
 
       {summary && (
         <>
           <section className="card hero">
             <p className="hero-label">Average price</p>
-            <p className="hero-price">{formatPrice(summary.average)}</p>
+            <p className="hero-price">{formatPrice(summary.average, currency)}</p>
             <p className="product-sub">{summary.count === 1 ? 'From 1 scan' : `From ${summary.count} scans`}</p>
           </section>
 
           <section className="stat-grid">
             <Stat
               label="Latest price"
-              value={formatPrice(summary.latest.price)}
+              value={formatPrice(summary.latest.price, currency)}
               note={[
                 summary.latest.unitPrice !== undefined && summary.latest.unitBasis
-                  ? formatUnitPrice(summary.latest.unitPrice, summary.latest.unitBasis)
+                  ? formatUnitPrice(summary.latest.unitPrice, summary.latest.unitBasis, currency)
                   : '',
                 shopName(summary.latest.shopId),
                 formatDaysAgo(summary.latest.timestamp),
@@ -122,7 +139,7 @@ export function ProductDetail({ barcode, onBack }: Props) {
             />
             <Stat
               label="Change from average"
-              value={fromAverage.euros === 0 ? 'Same' : formatSignedPrice(fromAverage.euros)}
+              value={fromAverage.euros === 0 ? 'Same' : formatSignedPrice(fromAverage.euros, currency)}
               note={fromAverage.euros === 0 ? 'Latest price is the average' : `${fromAverage.percent > 0 ? '+' : ''}${fromAverage.percent}% (latest vs average)`}
               tone={fromAverage.euros > 0 ? 'up' : fromAverage.euros < 0 ? 'down' : undefined}
             />
@@ -130,7 +147,7 @@ export function ProductDetail({ barcode, onBack }: Props) {
 
           <section className="card hero">
             <p className="hero-label">Lowest price</p>
-            <p className="hero-price">{formatPrice(summary.lowest.price)}</p>
+            <p className="hero-price">{formatPrice(summary.lowest.price, currency)}</p>
             <p className="product-sub">{`${shopName(summary.lowest.shopId)} · ${formatDaysAgo(summary.lowest.timestamp)}`}</p>
           </section>
 
@@ -140,7 +157,7 @@ export function ProductDetail({ barcode, onBack }: Props) {
               <p className="product-sub">The chart appears after your second scan of this product.</p>
             ) : (
               <>
-                <PriceChart series={series} dark={dark} />
+                <PriceChart series={series} dark={dark} currency={currency} />
                 {series.length > 1 && (
                   <div className="chart-legend" role="group" aria-label="Show or hide shops">
                     {series.map((s) => (
@@ -182,9 +199,9 @@ export function ProductDetail({ barcode, onBack }: Props) {
                         <span className="legend-swatch" style={{ background: colourOf(row.shopId) }} />
                         {shopName(row.shopId)}
                       </th>
-                      <td>{formatPrice(row.latest.price)}</td>
-                      <td>{formatPrice(row.lowest)}</td>
-                      <td>{formatPrice(row.average)}</td>
+                      <td>{formatPrice(row.latest.price, currency)}</td>
+                      <td>{formatPrice(row.lowest, currency)}</td>
+                      <td>{formatPrice(row.average, currency)}</td>
                       <td>{row.count}</td>
                     </tr>
                   ))}
@@ -205,10 +222,10 @@ export function ProductDetail({ barcode, onBack }: Props) {
                       <div className="product-sub small">{shopName(scan.shopId)}</div>
                     </div>
                     <div className="history-price">
-                      <div>{formatPrice(scan.price)}</div>
+                      <div>{formatPrice(scan.price, currency)}</div>
                       {scan.unitPrice !== undefined && scan.unitBasis && (
                         <div className="product-sub small">
-                          {formatUnitPrice(scan.unitPrice, scan.unitBasis)}
+                          {formatUnitPrice(scan.unitPrice, scan.unitBasis, currency)}
                           {scan.unitPriceSource === 'calculated' && <span className="calc-tag">calc.</span>}
                         </div>
                       )}
@@ -242,7 +259,7 @@ export function ProductDetail({ barcode, onBack }: Props) {
                   {confirmingDelete === scan.id && (
                     <div className="delete-confirm" role="alert">
                       <p>
-                        Delete this scan of {formatPrice(scan.price)}? This can't be undone.
+                        Delete this scan of {formatPrice(scan.price, currency)}? This can't be undone.
                       </p>
                       <div className="delete-actions">
                         <button type="button" className="danger-button" onClick={() => deleteScan(scan)}>

@@ -5,6 +5,7 @@ import { ProductThumb } from '../components/ProductThumb'
 import { ShopEditor } from '../components/ShopEditor'
 import { db, type Product } from '../lib/db'
 import { formatDaysAgo, formatPrice, formatShop } from '../lib/format'
+import { currencyOf } from '../lib/region'
 import { cheaperHere, productsAtShop, summariseShops } from '../lib/shopStats'
 import { priceDifference } from '../lib/stats'
 
@@ -86,7 +87,7 @@ export function ShopDetail({ shopId, onBack, onOpenProduct }: Props) {
                       <span className="product-sub small">{formatDaysAgo(latestHere.timestamp)}</span>
                     </span>
                     <span className="history-price">
-                      {formatPrice(latestHere.price)}
+                      {formatPrice(latestHere.price, currencyOf(latestHere))}
                       <span className={`compare-badge ${diff === undefined ? '' : diff.euros < 0 ? 'diff-down' : diff.euros > 0 ? 'diff-up' : ''}`}>
                         {diff === undefined
                           ? 'Only bought here'
