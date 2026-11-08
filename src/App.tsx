@@ -3,12 +3,14 @@ import { MenuDrawer, type Section } from './components/Menu'
 import { db, type Product } from './lib/db'
 import { About } from './screens/About'
 import { BarcodeScan } from './screens/BarcodeScan'
+import { CompareShops } from './screens/CompareShops'
 import { Home } from './screens/Home'
 import { OcrTest } from './screens/OcrTest'
 import { PriceScan } from './screens/PriceScan'
 import { Products } from './screens/Products'
 import { Settings } from './screens/Settings'
 import { ShopDetail } from './screens/ShopDetail'
+import { ShoppingList } from './screens/ShoppingList'
 import { Shops } from './screens/Shops'
 
 // Loaded when first opened, so the chart library doesn't slow down starting the app.
@@ -19,6 +21,8 @@ export type Screen =
   | { name: 'shops' }
   | { name: 'shop'; shopId: number }
   | { name: 'products' }
+  | { name: 'lists' }
+  | { name: 'compare' }
   | { name: 'about' }
   | { name: 'product'; barcode: string }
   | { name: 'barcode' }
@@ -74,7 +78,7 @@ function App() {
   }
 
   const currentSection: Section =
-    screen.name === 'shops' || screen.name === 'products' || screen.name === 'about' ? screen.name : 'scans'
+    screen.name === 'shops' || screen.name === 'products' || screen.name === 'lists' || screen.name === 'about' ? screen.name : 'scans'
   const menu = menuOpen && (
     <MenuDrawer
       current={currentSection}
@@ -117,6 +121,15 @@ function App() {
           <Products onOpenMenu={openMenu} onOpenProduct={openProduct} />
         </>
       )
+    case 'lists':
+      return (
+        <>
+          {menu}
+          <ShoppingList onOpenMenu={openMenu} onCompare={() => openScreen({ name: 'compare' })} />
+        </>
+      )
+    case 'compare':
+      return <CompareShops onBack={back} />
     case 'product':
       return (
         <Suspense fallback={null}>

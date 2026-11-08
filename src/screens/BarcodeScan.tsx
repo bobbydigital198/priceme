@@ -64,7 +64,7 @@ export function BarcodeScan({ onCancel, onConfirm }: Props) {
           onDetected={handleDetected}
           onError={(message) => setStep({ kind: 'camera-error', message })}
         >
-          {(canFocus) => (
+          {({ canFocus, zoomControl }) => (
             <>
               <div className="camera-top">
                 <button type="button" className="camera-button" onClick={onCancel}>
@@ -76,6 +76,7 @@ export function BarcodeScan({ onCancel, onConfirm }: Props) {
                 <BarcodeIcon className="camera-guide" />
               </div>
               <div className="camera-bottom">
+                {zoomControl}
                 <p className="camera-hint">
                   Fit the barcode inside the frame.{canFocus ? ' Tap the screen to focus.' : ''}
                 </p>

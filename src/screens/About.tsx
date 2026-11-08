@@ -60,7 +60,8 @@ export function About({ onOpenMenu }: Props) {
             tag. The tag photo itself is only used while reading it, and isn't kept.
           </li>
           <li>Your shops: name, street, chain and currency, plus the shop's location if you found it with "Find shops near me".</li>
-          <li>Your settings: light or dark mode, and your country and default currency.</li>
+          <li>Your shopping lists: the products on them, how many of each, and the shops chosen for comparing.</li>
+          <li>Your settings: light or dark mode, your country and default currency, and the camera zoom.</li>
         </ul>
 
         <h3>What leaves your phone</h3>

@@ -49,13 +49,14 @@ Updates download by themselves in the background. To pick up a new version strai
   1. Fit the barcode inside the white frame (only barcodes inside it are read). If it won't scan, tap **Type barcode instead**.
   2. Check the product and tap **Confirm**. Unknown products can be typed in, and PrixIt remembers them.
   3. Fill the white frame with the price tag and tap the shutter button. Or tap **Enter manually** to type the price.
-  - If the picture is blurry, tap the screen where you want the camera to focus (Android; iPhones focus by themselves).
+  - The photo is taken the moment you tap, and the phone buzzes when it's done. If the picture is blurry, tap the screen where you want the camera to focus, or use the **1× 2× 3×** buttons: the camera starts at 2×, so you can hold the phone a little further back, where it focuses better.
   4. Check the price and the shop, then tap **Save**.
 - **The shop** is remembered for 30 minutes, so the rest of a shopping trip needs no taps. Tap the shop to change it.
 - **The menu** (☰, top left) moves between the sections:
   - **Scans:** your recent scans, each product once, with its latest price. Tap one for its average, lowest and latest price, how the latest compares with the average, a price chart, a per-shop comparison and every scan; you can edit a scan's price, price per kilo and shop, delete a wrong scan, or change the product's category there.
   - **Shops:** your shops, with visits, products and last visit. Tap the ☆ to make a shop a favourite: favourites have their own filter and come first when you choose a shop for a scan. Tap one to see everything you've bought there and whether it's cheaper or dearer than elsewhere, or to rename, merge or delete it.
   - **Products:** every category, greyed out until you've scanned something in it, with the number of different products in each. Tap a category to see its products.
+  - **Shopping list:** add products you've scanned (with how many of each), then tap **Find the cheapest shop** to see what the whole list would cost at each of your shops, using your latest price at each. Untick shops that are too far away. It also shows how much you'd save by buying each product wherever it's cheapest. Save a list with a name (e.g. "Weekend shop") to find it again under **My shopping lists**, where you can open, change, rename or delete it.
   - **Settings:** light or dark mode (or match your phone); your country (France or the UK), which decides the supermarket chains suggested; your default currency (€ or £); backups; a price reader test using photos from your gallery; and deleting all data.
 - **Currencies:** each shop has its own currency (new shops get your default; change it on the shop's page). Each scan takes its shop's currency, and euro and pound prices are never averaged or compared together. A product with prices in both shows a switch at the top of its page.
 

@@ -1,6 +1,7 @@
 import Dexie, { type EntityTable } from 'dexie'
 import type { CategoryId } from './categories'
 import type { Currency } from './region'
+import type { ListItem } from './shoppingList'
 
 export type Product = {
   barcode: string
@@ -55,10 +56,24 @@ export type Shop = {
   currency?: Currency
 }
 
+// A shopping list you've saved under a name, in "My shopping lists".
+export type ShoppingList = {
+  id?: number
+  name: string
+  items: ListItem[]
+  // The shops chosen for comparing prices; missing means every shop with a price.
+  shopIds?: number[]
+  // The currency compared in, when your shops use more than one.
+  currency?: Currency
+  createdAt: number
+  updatedAt: number
+}
+
 export const db = new Dexie('priceme') as Dexie & {
   products: EntityTable<Product, 'barcode'>
   scans: EntityTable<Scan, 'id'>
   shops: EntityTable<Shop, 'id'>
+  lists: EntityTable<ShoppingList, 'id'>
 }
 
 const SCHEMA = {
@@ -98,6 +113,9 @@ db.version(3)
         delete scan.tagThumbnail
       }),
   )
+
+// Version 4 adds saved shopping lists.
+db.version(4).stores({ ...SCHEMA, lists: '++id, updatedAt' })
 
 // Asks the browser not to clear our data when the phone is low on space.
 export async function requestPersistentStorage() {

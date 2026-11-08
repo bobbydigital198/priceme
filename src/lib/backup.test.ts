@@ -22,6 +22,18 @@ describe('backups', () => {
     expect(parsed).toEqual({ ok: true, backup: old })
   })
 
+  it('keeps saved shopping lists, and accepts older backups without them', () => {
+    const lists = [{ id: 1, name: 'Weekend shop', items: [{ barcode: '3017620422003', quantity: 2 }], createdAt: 1, updatedAt: 2 }]
+    const parsed = parseBackup(JSON.stringify(makeBackup({ ...data, lists }, '1.16.0')))
+    expect(parsed.ok && parsed.backup.lists).toEqual(lists)
+    expect(parseBackup(JSON.stringify(makeBackup(data, '1.8.13'))).ok).toBe(true)
+  })
+
+  it('rejects a damaged shopping list', () => {
+    const backup = makeBackup({ ...data, lists: [{ id: 1, name: 'Weekend shop', items: [{ barcode: 'x' }] } as never] }, '1.16.0')
+    expect(parseBackup(JSON.stringify(backup)).ok).toBe(false)
+  })
+
   it('names the file by date', () => {
     expect(backupFileName(new Date(2026, 0, 5))).toBe('prixit-backup-2026-01-05.json')
   })

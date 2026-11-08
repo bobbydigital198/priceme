@@ -1,8 +1,9 @@
 // Backup files: everything PrixIt stores, as one JSON file you can keep and restore.
 // The checks here run before anything is replaced, so a wrong or damaged file can't wipe your data.
-import type { Product, Scan, Shop } from './db'
+import type { Product, Scan, Shop, ShoppingList } from './db'
 
-export type BackupData = { products: Product[]; scans: Scan[]; shops: Shop[] }
+// Saved shopping lists were added later, so older backups don't have them.
+export type BackupData = { products: Product[]; scans: Scan[]; shops: Shop[]; lists?: ShoppingList[] }
 // The app was called PriceMe when backups began; the label inside the file stays the same so
 // older backups still restore.
 export type Backup = BackupData & { app: 'PriceMe'; format: 1; exportedAt: string; appVersion: string }
@@ -41,7 +42,18 @@ export function parseBackup(text: string): ParsedBackup {
   const badScan = json.scans.findIndex(
     (s) => !isObject(s) || !isNumber(s.id) || !isString(s.barcode) || !isNumber(s.price) || !isNumber(s.timestamp),
   )
-  if (badProduct >= 0 || badShop >= 0 || badScan >= 0) return { ok: false, error: 'This backup is damaged: some entries are unreadable.' }
+  const badList =
+    json.lists !== undefined &&
+    (!Array.isArray(json.lists) ||
+      json.lists.some(
+        (l) =>
+          !isObject(l) ||
+          !isNumber(l.id) ||
+          !isString(l.name) ||
+          !Array.isArray(l.items) ||
+          l.items.some((i) => !isObject(i) || !isString(i.barcode) || !isNumber(i.quantity)),
+      ))
+  if (badProduct >= 0 || badShop >= 0 || badScan >= 0 || badList) return { ok: false, error: 'This backup is damaged: some entries are unreadable.' }
 
   // Older backups include a small tag photo with each scan; those are no longer kept.
   const scans = json.scans.map((s) => {

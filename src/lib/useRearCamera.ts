@@ -13,14 +13,39 @@ function cameraErrorMessage(error: unknown): string {
   return 'The camera could not start. Please try again.'
 }
 
+type CameraOptions = {
+  // Price tags: ask for a sharper live view (up to 4K), since the photo is a frame of it.
+  highResolution?: boolean
+}
+
+// Zoom choices offered on the camera screens, where the camera allows them.
+const ZOOM_STEPS = [1, 2, 3]
+const ZOOM_KEY = 'camera-zoom'
+// Phones can't focus very close up; starting at 2x means holding the phone further back.
+const DEFAULT_ZOOM = 2
+
+function savedZoom(): number {
+  try {
+    const value = Number(localStorage.getItem(ZOOM_KEY))
+    return ZOOM_STEPS.includes(value) ? value : DEFAULT_ZOOM
+  } catch {
+    return DEFAULT_ZOOM
+  }
+}
+
+type Capabilities = { focusMode?: string[]; zoom?: { min: number; max: number } }
+
 // Streams the rear camera into a <video>. The camera switches off when the component goes away.
-export function useRearCamera(onError: (message: string) => void) {
+export function useRearCamera(onError: (message: string) => void, { highResolution = false }: CameraOptions = {}) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const trackRef = useRef<MediaStreamTrack>(undefined)
   const [ready, setReady] = useState(false)
   // Whether the camera lets PrixIt choose where to focus (most Android phones in Chrome; not iPhones).
   const [canFocus, setCanFocus] = useState(false)
   const [focusPoint, setFocusPoint] = useState<{ x: number; y: number; id: number }>()
+  // The zoom steps this camera allows (empty if it can't zoom), and the one in use.
+  const [zoomSteps, setZoomSteps] = useState<number[]>([])
+  const [zoom, setZoomState] = useState(1)
   const onErrorRef = useRef(onError)
   useEffect(() => {
     onErrorRef.current = onError
@@ -36,11 +61,9 @@ export function useRearCamera(onError: (message: string) => void) {
         onErrorRef.current('This browser cannot use the camera here.')
         return
       }
+      const size = highResolution ? { width: { ideal: 3840 }, height: { ideal: 2160 } } : { width: { ideal: 1920 }, height: { ideal: 1080 } }
       try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          audio: false,
-          video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } },
-        })
+        stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: { ideal: 'environment' }, ...size } })
       } catch (error) {
         if (!stopped) onErrorRef.current(cameraErrorMessage(error))
         return
@@ -54,11 +77,20 @@ export function useRearCamera(onError: (message: string) => void) {
       await video.play().catch(() => {})
       const [track] = stream.getVideoTracks()
       trackRef.current = track
-      // Not every camera supports continuous focus; ignore it if not.
-      track?.applyConstraints({ advanced: [{ focusMode: 'continuous' } as MediaTrackConstraintSet] }).catch(() => {})
-      const modes = (track?.getCapabilities?.() as { focusMode?: string[] } | undefined)?.focusMode ?? []
+      const capabilities = (track?.getCapabilities?.() ?? {}) as Capabilities
+      const modes = capabilities.focusMode ?? []
+      const steps = capabilities.zoom ? ZOOM_STEPS.filter((z) => z >= capabilities.zoom!.min && z <= capabilities.zoom!.max) : []
+      const startZoom = steps.length > 1 ? Math.min(savedZoom(), steps[steps.length - 1]) : undefined
+      // Not every camera supports continuous focus or zoom; whatever isn't supported is ignored.
+      track
+        ?.applyConstraints({
+          advanced: [{ ...(modes.includes('continuous') ? { focusMode: 'continuous' } : {}), ...(startZoom ? { zoom: startZoom } : {}) } as MediaTrackConstraintSet],
+        })
+        .catch(() => {})
       if (!stopped) {
         setCanFocus(modes.includes('single-shot') || modes.includes('continuous'))
+        setZoomSteps(steps.length > 1 ? steps : [])
+        if (startZoom) setZoomState(startZoom)
         setReady(true)
       }
     }
@@ -70,7 +102,19 @@ export function useRearCamera(onError: (message: string) => void) {
       stream?.getTracks().forEach((t) => t.stop())
       video.srcObject = null
     }
-  }, [])
+  }, [highResolution])
+
+  function setZoom(level: number) {
+    const track = trackRef.current
+    if (!track) return
+    setZoomState(level)
+    try {
+      localStorage.setItem(ZOOM_KEY, String(level))
+    } catch {
+      // Not remembered next time.
+    }
+    track.applyConstraints({ advanced: [{ zoom: level } as MediaTrackConstraintSet] }).catch(() => {})
+  }
 
   // Tap to focus: asks the camera to focus on the tapped spot. Cameras that can't do this ignore it.
   function focusAt(clientX: number, clientY: number) {
@@ -79,7 +123,7 @@ export function useRearCamera(onError: (message: string) => void) {
     if (!track || !video?.videoWidth) return
     const point = screenToVideoPoint(clientX, clientY, video)
     setFocusPoint((current) => ({ x: clientX, y: clientY, id: (current?.id ?? 0) + 1 }))
-    const modes = (track.getCapabilities?.() as { focusMode?: string[] } | undefined)?.focusMode ?? []
+    const modes = (track.getCapabilities?.() as Capabilities | undefined)?.focusMode ?? []
     const mode = modes.includes('single-shot') ? 'single-shot' : modes.includes('continuous') ? 'continuous' : undefined
     if (!mode) return
     const focusThere = { pointsOfInterest: [point], focusMode: mode } as MediaTrackConstraintSet
@@ -97,35 +141,7 @@ export function useRearCamera(onError: (message: string) => void) {
     focusAt(event.clientX, event.clientY)
   }
 
-  // A full-resolution photo from the camera, sharper than a frame of the live view. Only some
-  // browsers can do this (Chrome on Android); others return undefined and use the live view.
-  async function takePhoto(): Promise<ImageBitmap | undefined> {
-    const track = trackRef.current
-    const Capture = (globalThis as { ImageCapture?: ImageCaptureClass }).ImageCapture
-    if (!track || !Capture) return undefined
-    try {
-      const capture = new Capture(track)
-      const capabilities = await capture.getPhotoCapabilities().catch(() => undefined)
-      const settings: Record<string, unknown> = {}
-      // No flash: it causes glare on shiny labels.
-      if (capabilities?.fillLightMode?.includes('off')) settings.fillLightMode = 'off'
-      const blob = await withTimeout(capture.takePhoto(settings), 5000)
-      return await createImageBitmap(blob)
-    } catch {
-      return undefined
-    }
-  }
-
-  return { videoRef, ready, canFocus, tapToFocus, focusPoint, takePhoto }
-}
-
-type ImageCaptureClass = new (track: MediaStreamTrack) => {
-  getPhotoCapabilities(): Promise<{ fillLightMode?: string[] }>
-  takePhoto(settings?: Record<string, unknown>): Promise<Blob>
-}
-
-function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
-  return Promise.race([promise, new Promise<T>((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))])
+  return { videoRef, ready, canFocus, tapToFocus, focusPoint, zoomSteps, zoom, setZoom }
 }
 
 // Where a tap lands in the camera picture, from 0 to 1 across and down. The picture fills the

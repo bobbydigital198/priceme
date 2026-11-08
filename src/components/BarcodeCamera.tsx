@@ -3,14 +3,16 @@ import { createDetector, normaliseBarcode } from '../lib/barcode'
 import { frameToVideoCrop } from '../lib/crop'
 import { useRearCamera } from '../lib/useRearCamera'
 import { FocusRing } from './FocusRing'
+import { ZoomControl } from './ZoomControl'
 
 type Props = {
   // The on-screen guide: only barcodes inside it are read.
   guideRef: RefObject<HTMLElement | null>
   onDetected: (barcode: string) => void
   onError: (message: string) => void
-  // What's drawn over the camera view, told whether tap to focus works on this phone.
-  children: (canFocus: boolean) => ReactNode
+  // What's drawn over the camera view, told whether tap to focus works on this phone, with the
+  // zoom buttons to place (nothing if the camera can't zoom).
+  children: (camera: { canFocus: boolean; zoomControl: ReactNode }) => ReactNode
 }
 
 const SCAN_INTERVAL_MS = 120
@@ -19,7 +21,7 @@ const MARGIN = 0.08
 
 // Live rear-camera view that reports the first valid barcode inside the guide, then stops.
 export function BarcodeCamera({ guideRef, onDetected, onError, children }: Props) {
-  const { videoRef, ready, canFocus, tapToFocus, focusPoint } = useRearCamera(onError)
+  const { videoRef, ready, canFocus, tapToFocus, focusPoint, zoomSteps, zoom, setZoom } = useRearCamera(onError)
   const onDetectedRef = useRef(onDetected)
   useEffect(() => {
     onDetectedRef.current = onDetected
@@ -80,7 +82,7 @@ export function BarcodeCamera({ guideRef, onDetected, onError, children }: Props
     <>
       <video ref={videoRef} className="camera-video" playsInline muted autoPlay />
       <div className="camera-overlay" onPointerUp={tapToFocus}>
-        {children(canFocus)}
+        {children({ canFocus, zoomControl: <ZoomControl steps={zoomSteps} zoom={zoom} onZoom={setZoom} /> })}
       </div>
       <FocusRing key={focusPoint?.id} point={focusPoint} />
     </>

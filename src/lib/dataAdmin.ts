@@ -1,11 +1,12 @@
 // Settings actions that change stored data: backup, restore, delete all, and shop tidying.
 import { backupFileName, makeBackup, type Backup } from './backup'
 import { db, type Shop } from './db'
+import { clearCart } from './cart'
 import { clearNearbyCache } from './shops'
 
 export async function exportBackup(): Promise<{ fileName: string; json: string; counts: { scans: number; products: number; shops: number } }> {
-  const [products, scans, shops] = await Promise.all([db.products.toArray(), db.scans.toArray(), db.shops.toArray()])
-  const backup = makeBackup({ products, scans, shops }, __APP_VERSION__)
+  const [products, scans, shops, lists] = await Promise.all([db.products.toArray(), db.scans.toArray(), db.shops.toArray(), db.lists.toArray()])
+  const backup = makeBackup({ products, scans, shops, lists }, __APP_VERSION__)
   return { fileName: backupFileName(), json: JSON.stringify(backup), counts: { scans: scans.length, products: products.length, shops: shops.length } }
 }
 
@@ -38,19 +39,22 @@ export function downloadFile(fileName: string, text: string) {
 
 // Replaces everything with the backup's contents, keeping ids so scans still point at their shops.
 export async function restoreBackup(backup: Backup) {
-  await db.transaction('rw', db.products, db.scans, db.shops, async () => {
-    await Promise.all([db.products.clear(), db.scans.clear(), db.shops.clear()])
+  await db.transaction('rw', [db.products, db.scans, db.shops, db.lists], async () => {
+    await Promise.all([db.products.clear(), db.scans.clear(), db.shops.clear(), db.lists.clear()])
     await db.products.bulkAdd(backup.products)
     await db.shops.bulkAdd(backup.shops)
     await db.scans.bulkAdd(backup.scans)
+    await db.lists.bulkAdd(backup.lists ?? [])
   })
+  clearCart()
 }
 
 export async function deleteAllData() {
-  await db.transaction('rw', db.products, db.scans, db.shops, async () => {
-    await Promise.all([db.products.clear(), db.scans.clear(), db.shops.clear()])
+  await db.transaction('rw', [db.products, db.scans, db.shops, db.lists], async () => {
+    await Promise.all([db.products.clear(), db.scans.clear(), db.shops.clear(), db.lists.clear()])
   })
   clearNearbyCache()
+  clearCart()
 }
 
 // A shop has one currency, so changing it also changes the currency of the scans saved there.

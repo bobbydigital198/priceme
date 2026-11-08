@@ -739,6 +739,31 @@ button {
   opacity: 0.3;
 }
 
+/* Zoom buttons on the camera screens. */
+.zoom-control {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.zoom-control button {
+  min-width: 48px;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid rgb(255 255 255 / 0.5);
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.45);
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.zoom-control button.selected {
+  background: #ffffff;
+  color: #000000;
+  border-color: #ffffff;
+}
+
 /* Shows where you tapped to focus. */
 .focus-ring {
   position: fixed;
@@ -1412,6 +1437,324 @@ button {
 }
 
 /* Edit above Delete, so both fit on narrow phones and with large text. */
+/* ---- Shopping list ---- */
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.list-rows {
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+  display: grid;
+}
+
+.list-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.list-row:last-child {
+  border-bottom: none;
+}
+
+.list-row-name {
+  display: grid;
+  gap: 2px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.list-row-name .product-sub {
+  font-weight: 400;
+}
+
+.list-row.in-list {
+  background: var(--surface-alt);
+  margin: 0 -8px;
+  padding: 8px;
+  border-radius: 10px;
+}
+
+.add-button {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid var(--brand);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--brand-ink);
+  font-weight: 700;
+}
+
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+}
+
+.stepper button {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--brand-ink);
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.stepper button:disabled {
+  opacity: 0.35;
+}
+
+.stepper-value {
+  min-width: 1.6em;
+  text-align: center;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.picker-screen {
+  padding-bottom: 110px;
+}
+
+.picker-search {
+  margin-bottom: 8px;
+}
+
+.picker-footer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 11;
+  padding: 12px 16px calc(env(safe-area-inset-bottom) + 12px);
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+}
+
+.picker-footer .primary-button {
+  width: 100%;
+  max-width: 560px;
+  display: block;
+  margin: 0 auto;
+}
+
+.list-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 12px;
+}
+
+.saved-tag {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.list-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 20px;
+  margin-top: 8px;
+}
+
+.list-actions .text-button {
+  margin: 0;
+  padding: 0;
+  min-height: 44px;
+}
+
+/* Shopping list screens: keep the cards apart. */
+.shop-chooser,
+.shop-chooser + .hero,
+.shop-chooser + .card {
+  margin-bottom: 16px;
+}
+
+.name-form {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.saved-lists {
+  margin: 0 0 24px;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.saved-lists button {
+  width: 100%;
+  display: grid;
+  gap: 2px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  color: inherit;
+  text-align: left;
+}
+
+.saved-lists button.selected {
+  border-color: var(--brand);
+  box-shadow: inset 0 0 0 1px var(--brand);
+}
+
+.saved-list-name {
+  font-weight: 700;
+}
+
+.shop-chooser summary,
+.result-card summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.shop-chooser summary::-webkit-details-marker,
+.result-card summary::-webkit-details-marker {
+  display: none;
+}
+
+.shop-chooser summary {
+  display: grid;
+  gap: 2px;
+}
+
+.shop-chooser summary .card-heading {
+  margin: 0;
+}
+
+.check-list {
+  margin: 8px 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 4px;
+}
+
+.check-list label {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  min-height: 48px;
+}
+
+.check-list input {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--brand);
+}
+
+.check-list label > span {
+  display: grid;
+  gap: 2px;
+  font-weight: 600;
+}
+
+.check-list .product-sub {
+  font-weight: 400;
+}
+
+.hero-shop {
+  margin: 4px 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.result-list {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.result-card {
+  margin: 0;
+}
+
+.result-card summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+}
+
+.result-main {
+  display: grid;
+  gap: 2px;
+}
+
+.result-shop {
+  font-weight: 700;
+}
+
+.result-total {
+  font-size: 1.2rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.warning-text {
+  color: var(--danger);
+}
+
+.breakdown {
+  width: 100%;
+  margin: 12px 0 8px;
+  border-collapse: collapse;
+}
+
+.breakdown th,
+.breakdown td {
+  padding: 6px 0;
+  border-top: 1px solid var(--border);
+  vertical-align: top;
+}
+
+.breakdown th {
+  display: grid;
+  gap: 2px;
+  text-align: left;
+  font-weight: 600;
+}
+
+.breakdown th .product-sub {
+  font-weight: 400;
+}
+
+.breakdown td {
+  text-align: right;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.small-hero {
+  font-size: 2rem;
+  margin: 4px 0;
+}
+
+.split-shop h3 {
+  margin: 16px 0 0;
+  font-size: 1rem;
+}
+
 .history-actions {
   display: flex;
   flex-direction: column;

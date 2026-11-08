@@ -1,11 +1,12 @@
 import { useEffect } from 'react'
 
-export type Section = 'scans' | 'shops' | 'products' | 'about'
+export type Section = 'scans' | 'shops' | 'products' | 'lists' | 'about'
 
 const SECTIONS: { id: Section; label: string }[] = [
   { id: 'scans', label: 'Scans' },
   { id: 'shops', label: 'Shops' },
   { id: 'products', label: 'Products' },
+  { id: 'lists', label: 'Shopping list' },
 ]
 
 export function MenuButton({ onClick }: { onClick: () => void }) {
