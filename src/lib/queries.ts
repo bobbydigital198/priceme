@@ -6,8 +6,6 @@ export type RecentScan = {
   scan: Scan
   product?: Product
   shop?: Shop
-  // Total scans of this product, not just the ones on screen.
-  productScanCount: number
   // Your average price for this product at the scan's shop (in the same currency), to show
   // whether this price is above or below it.
   shopAverage?: number
@@ -50,7 +48,6 @@ export async function getRecentScans(limit = HOME_SCAN_LIMIT): Promise<RecentSca
       scan,
       product: productByBarcode.get(scan.barcode),
       shop: scan.shopId === undefined ? undefined : shopById.get(scan.shopId),
-      productScanCount: all.length,
       shopAverage: scan.shopId === undefined || !atShop.length ? undefined : atShop.reduce((sum, s) => sum + s.price, 0) / atShop.length,
     }
   })

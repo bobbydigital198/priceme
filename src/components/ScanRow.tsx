@@ -1,4 +1,4 @@
-import { formatPrice, formatScanCount, formatScanTime, formatShop, formatUnitPrice } from '../lib/format'
+import { formatPrice, formatScanTime, formatShop, formatUnitPrice } from '../lib/format'
 import type { RecentScan } from '../lib/queries'
 import { currencyOf } from '../lib/region'
 import { ProductThumb } from './ProductThumb'
@@ -6,7 +6,7 @@ import { ProductThumb } from './ProductThumb'
 type Props = { item: RecentScan; onOpen: (barcode: string) => void }
 
 export function ScanRow({ item, onOpen }: Props) {
-  const { scan, product, shop, productScanCount, shopAverage } = item
+  const { scan, product, shop, shopAverage } = item
   const name = product?.name ?? `Unknown product (${scan.barcode})`
   const currency = currencyOf(scan)
   // Red if this price is above your average for the product at this shop, green if below.
@@ -23,10 +23,7 @@ export function ScanRow({ item, onOpen }: Props) {
           <div className="scan-row-name">{name}</div>
           {product?.brand && <div className="scan-row-brand">{product.brand}</div>}
           {product?.quantityText && <div className="scan-row-brand">{product.quantityText}</div>}
-          <div className="scan-row-meta">
-            <span>{formatScanTime(scan.timestamp)}</span>
-            <span>{formatScanCount(productScanCount)}</span>
-          </div>
+          <div className="scan-row-meta">{formatScanTime(scan.timestamp)}</div>
         </div>
 
         <div className={`scan-row-price${tone}`} title={toneLabel}>
