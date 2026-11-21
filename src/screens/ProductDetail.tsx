@@ -4,21 +4,22 @@ import { PriceChart, type ChartSeries } from '../components/PriceChart'
 import { OffCredit } from '../components/Credits'
 import { EditScan } from '../components/EditScan'
 import { ProductThumb } from '../components/ProductThumb'
-import { CATEGORIES, categorise, type CategoryId } from '../lib/categories'
+import { categoryName, categorise } from '../lib/categories'
 import { shopColour } from '../lib/chartColours'
 import { db, type Scan, type Shop } from '../lib/db'
 import { formatDaysAgo, formatPrice, formatScanTime, formatShop, formatSignedPrice, formatUnitPrice } from '../lib/format'
+import { computeUnitPrice } from '../lib/priceParser'
 import { CURRENCIES, currencyOf, type Currency } from '../lib/region'
 import { useDarkMode } from '../lib/theme'
-import { breakdownByShop, priceDifference, shopsInFirstSeenOrder, summariseProduct } from '../lib/stats'
+import { breakdownByShop, cheapestAverageShop, priceDifference, shopsInFirstSeenOrder, summariseProduct } from '../lib/stats'
 
-type Props = { barcode: string; onBack: () => void }
+type Props = { barcode: string; onBack: () => void; onEdit: () => void }
 
 const NO_SHOP = 'none'
 const keyOf = (shopId?: number) => (shopId === undefined ? NO_SHOP : String(shopId))
 
 // Everything about one product: stats, price chart, per-shop breakdown and every scan.
-export function ProductDetail({ barcode, onBack }: Props) {
+export function ProductDetail({ barcode, onBack, onEdit }: Props) {
   const product = useLiveQuery(() => db.products.get(barcode), [barcode])
   const allScans = useLiveQuery(() => db.scans.where('barcode').equals(barcode).toArray(), [barcode])
   // Prices in different currencies are never mixed: the page shows one currency at a time,
@@ -32,6 +33,10 @@ export function ProductDetail({ barcode, onBack }: Props) {
   const [hidden, setHidden] = useState<Set<string>>(new Set())
   const [confirmingDelete, setConfirmingDelete] = useState<number>()
   const [editing, setEditing] = useState<number>()
+  // The shop shown in the average price box. Not remembered: the page always opens on the
+  // shop with the cheapest average.
+  const [chosenShop, setChosenShop] = useState<string>()
+  const [pickingShop, setPickingShop] = useState(false)
 
   const name = product?.name ?? 'Unknown product'
   const shopById = new Map((shops ?? []).map((s): [number, Shop] => [s.id!, s]))
@@ -53,6 +58,17 @@ export function ProductDetail({ barcode, onBack }: Props) {
     hidden: hidden.has(keyOf(shopId)),
   }))
   const byShop = breakdownByShop(scans ?? [])
+  const cheapest = cheapestAverageShop(byShop)
+  const shown = byShop.find((row) => keyOf(row.shopId) === chosenShop) ?? cheapest
+  const showingCheapest = !!shown && !!cheapest && keyOf(shown.shopId) === keyOf(cheapest.shopId)
+  // Price per kilo or litre of an average, from the pack size.
+  const size = product?.quantityValue && product.quantityUnit ? { value: product.quantityValue, unit: product.quantityUnit } : undefined
+  const perUnit = (average: number) => {
+    if (!size) return undefined
+    const { unitPrice, unitBasis } = computeUnitPrice(average, size)
+    return formatUnitPrice(unitPrice, unitBasis, currency)
+  }
+  const averageAt = (shopId?: number) => (shopId === undefined ? 'Average price with no shop recorded' : `Average price at ${shopName(shopId)}`)
   const newestFirst = [...(scans ?? [])].sort((a, b) => b.timestamp - a.timestamp)
 
   function toggleShop(key: string) {
@@ -72,9 +88,16 @@ export function ProductDetail({ barcode, onBack }: Props) {
 
   return (
     <main className="screen product-page">
-      <button type="button" className="back-button" onClick={onBack}>
-        Back
-      </button>
+      <div className="page-top">
+        <button type="button" className="back-button" onClick={onBack}>
+          Back
+        </button>
+        {product && (
+          <button type="button" className="back-button edit-top-button" onClick={onEdit}>
+            Edit
+          </button>
+        )}
+      </div>
 
       <section className="product-header">
         <ProductThumb imageUrl={product?.imageUrl} name={name} size={96} />
@@ -88,19 +111,10 @@ export function ProductDetail({ barcode, onBack }: Props) {
       </section>
 
       {product && (
-        <label className="field category-field">
-          <span>Category{product.category ? '' : ' (chosen automatically)'}</span>
-          <select
-            value={categorise(product)}
-            onChange={(e) => db.products.update(barcode, { category: e.target.value as CategoryId })}
-          >
-            {CATEGORIES.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-        </label>
+        <p className="category-line">
+          Category: <strong>{categoryName(categorise(product))}</strong>
+          {!product.category && <span className="product-sub small"> (chosen automatically)</span>}
+        </p>
       )}
 
       {currencies.length > 1 && (
@@ -117,11 +131,57 @@ export function ProductDetail({ barcode, onBack }: Props) {
 
       {summary && (
         <>
-          <section className="card hero">
-            <p className="hero-label">Average price</p>
-            <p className="hero-price">{formatPrice(summary.average, currency)}</p>
-            <p className="product-sub">{summary.count === 1 ? 'From 1 scan' : `From ${summary.count} scans`}</p>
-          </section>
+          {shown && (
+            <section className="card hero">
+              <button
+                type="button"
+                className="hero-button"
+                aria-expanded={pickingShop}
+                onClick={() => setPickingShop((open) => !open)}
+                disabled={byShop.length < 2}
+              >
+                <span className="hero-label">{averageAt(shown.shopId)}</span>
+                <span className="hero-price-row">
+                  <span className="hero-price">{formatPrice(shown.average, currency)}</span>
+                  {perUnit(shown.average) && <span className="hero-unit">{perUnit(shown.average)}</span>}
+                </span>
+                <span className="product-sub">
+                  {shown.count === 1 ? 'From 1 scan' : `From ${shown.count} scans`}
+                  {byShop.length > 1 && (pickingShop ? ' · choose a shop below' : ' · tap to see another shop')}
+                </span>
+              </button>
+              {pickingShop && (
+                <ul className="hero-shops" aria-label="Average price at each shop">
+                  {byShop.map((row) => (
+                    <li key={keyOf(row.shopId)}>
+                      <button
+                        type="button"
+                        className={keyOf(row.shopId) === keyOf(shown.shopId) ? 'selected' : ''}
+                        aria-pressed={keyOf(row.shopId) === keyOf(shown.shopId)}
+                        onClick={() => {
+                          setChosenShop(keyOf(row.shopId))
+                          setPickingShop(false)
+                        }}
+                      >
+                        <span>{shopName(row.shopId)}</span>
+                        <span className="hero-shop-price">{formatPrice(row.average, currency)}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          )}
+
+          {cheapest && !showingCheapest && (
+            <section className="card lowest-average">
+              <p className="lowest-average-label">Lowest average price · {shopName(cheapest.shopId)}</p>
+              <p className="lowest-average-value">
+                {formatPrice(cheapest.average, currency)}
+                {perUnit(cheapest.average) && <span className="product-sub small"> · {perUnit(cheapest.average)}</span>}
+              </p>
+            </section>
+          )}
 
           <section className="stat-grid">
             <Stat
@@ -140,15 +200,13 @@ export function ProductDetail({ barcode, onBack }: Props) {
             <Stat
               label="Change from average"
               value={fromAverage.euros === 0 ? 'Same' : formatSignedPrice(fromAverage.euros, currency)}
-              note={fromAverage.euros === 0 ? 'Latest price is the average' : `${fromAverage.percent > 0 ? '+' : ''}${fromAverage.percent}% (latest vs average)`}
+              note={
+                fromAverage.euros === 0
+                  ? 'Latest price is your average across all shops'
+                  : `${fromAverage.percent > 0 ? '+' : ''}${fromAverage.percent}% (latest vs your average across all shops, ${formatPrice(summary.average, currency)})`
+              }
               tone={fromAverage.euros > 0 ? 'up' : fromAverage.euros < 0 ? 'down' : undefined}
             />
-          </section>
-
-          <section className="card hero">
-            <p className="hero-label">Lowest price</p>
-            <p className="hero-price">{formatPrice(summary.lowest.price, currency)}</p>
-            <p className="product-sub">{`${shopName(summary.lowest.shopId)} · ${formatDaysAgo(summary.lowest.timestamp)}`}</p>
           </section>
 
           <section className="card">

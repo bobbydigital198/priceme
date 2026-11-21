@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { breakdownByShop, isAboveUsual, priceDifference, shopsInFirstSeenOrder, summariseHistory, summariseProduct } from './stats'
+import { breakdownByShop, cheapestAverageShop, isAboveUsual, priceDifference, shopsInFirstSeenOrder, summariseHistory, summariseProduct } from './stats'
 
 const scans = [
   { price: 2.89, timestamp: 100, shopId: 1 },
@@ -23,6 +23,25 @@ describe('summariseProduct', () => {
     expect(summary.highest.price).toBe(3.49)
     expect(summary.average).toBe(3.11)
     expect(summary.change).toEqual({ euros: 0.26, percent: 9 })
+  })
+})
+
+describe('cheapestAverageShop', () => {
+  const at = (shopId: number | undefined, price: number, timestamp: number) => ({ shopId, price, timestamp })
+
+  it('picks the shop with the cheapest average', () => {
+    const rows = breakdownByShop([at(1, 2, 1), at(1, 3, 2), at(2, 2.4, 3), at(2, 2.4, 4)])
+    // Shop 1 averages 2.50, shop 2 averages 2.40.
+    expect(cheapestAverageShop(rows)?.shopId).toBe(2)
+  })
+
+  it('on a tie, picks the shop scanned most recently', () => {
+    const rows = breakdownByShop([at(1, 2, 5), at(2, 2, 9), at(3, 2, 7)])
+    expect(cheapestAverageShop(rows)?.shopId).toBe(2)
+  })
+
+  it('gives nothing when there are no scans', () => {
+    expect(cheapestAverageShop([])).toBeUndefined()
   })
 })
 

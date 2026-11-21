@@ -65,6 +65,16 @@ export function breakdownByShop<T extends ShopPricePoint>(scans: T[]): ShopBreak
     .sort((a, b) => a.average - b.average)
 }
 
+// The shop the product page starts on: the cheapest average. If shops tie, the one you
+// scanned the product at most recently.
+export function cheapestAverageShop<T extends ShopPricePoint>(rows: ShopBreakdown<T>[]): ShopBreakdown<T> | undefined {
+  return rows.reduce<ShopBreakdown<T> | undefined>(
+    (best, row) =>
+      !best || row.average < best.average || (row.average === best.average && row.latest.timestamp > best.latest.timestamp) ? row : best,
+    undefined,
+  )
+}
+
 // Shops in the order you first scanned this product there. Chart colours follow this order,
 // so a shop keeps its colour as you add scans.
 export function shopsInFirstSeenOrder(scans: ShopPricePoint[]): (number | undefined)[] {

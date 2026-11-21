@@ -1,6 +1,7 @@
 // Settings actions that change stored data: backup, restore, delete all, and shop tidying.
 import { backupFileName, makeBackup, type Backup } from './backup'
-import { db, type Shop } from './db'
+import { db, type Product, type Shop } from './db'
+import { computeUnitPrice } from './priceParser'
 import { clearCart } from './cart'
 import { clearNearbyCache } from './shops'
 
@@ -55,6 +56,32 @@ export async function deleteAllData() {
   })
   clearNearbyCache()
   clearCart()
+}
+
+// Saves changes to a product. Prices per kilo or litre that were worked out from the old pack
+// size are worked out again from the new one (or removed if the size is cleared).
+export async function updateProduct(barcode: string, changes: Partial<Omit<Product, 'barcode'>>) {
+  await db.transaction('rw', db.products, db.scans, async () => {
+    await db.products.update(barcode, changes)
+    const product = await db.products.get(barcode)
+    if (!product) return
+    const size = product.quantityValue && product.quantityUnit ? { value: product.quantityValue, unit: product.quantityUnit } : undefined
+    await db.scans
+      .where('barcode')
+      .equals(barcode)
+      .filter((s) => s.unitPriceSource === 'calculated')
+      .modify((scan) => {
+        if (size) {
+          const { unitPrice, unitBasis } = computeUnitPrice(scan.price, size)
+          scan.unitPrice = unitPrice
+          scan.unitBasis = unitBasis
+        } else {
+          delete scan.unitPrice
+          delete scan.unitBasis
+          delete scan.unitPriceSource
+        }
+      })
+  })
 }
 
 // A shop has one currency, so changing it also changes the currency of the scans saved there.

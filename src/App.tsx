@@ -7,6 +7,7 @@ import { CompareShops } from './screens/CompareShops'
 import { Home } from './screens/Home'
 import { OcrTest } from './screens/OcrTest'
 import { PriceScan } from './screens/PriceScan'
+import { ProductEdit } from './screens/ProductEdit'
 import { Products } from './screens/Products'
 import { Settings } from './screens/Settings'
 import { ShopDetail } from './screens/ShopDetail'
@@ -25,6 +26,7 @@ export type Screen =
   | { name: 'compare' }
   | { name: 'about' }
   | { name: 'product'; barcode: string }
+  | { name: 'product-edit'; barcode: string }
   | { name: 'barcode' }
   | { name: 'price'; product: Product }
   | { name: 'settings' }
@@ -133,9 +135,11 @@ function App() {
     case 'product':
       return (
         <Suspense fallback={null}>
-          <ProductDetail barcode={screen.barcode} onBack={back} />
+          <ProductDetail barcode={screen.barcode} onBack={back} onEdit={() => openScreen({ name: 'product-edit', barcode: screen.barcode })} />
         </Suspense>
       )
+    case 'product-edit':
+      return <ProductEdit barcode={screen.barcode} onDone={back} />
     case 'barcode':
       return (
         <BarcodeScan
