@@ -603,6 +603,27 @@ button {
   font-variant-numeric: tabular-nums;
 }
 
+/* The shop sits under the price and may wrap onto two lines. */
+.scan-row-shop {
+  max-width: 8.5rem;
+  margin-left: auto;
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  white-space: normal;
+}
+
+/* Above or below your average at that shop: price, unit price and shop all take the colour. */
+.scan-row-price.diff-up .scan-row-unit,
+.scan-row-price.diff-up .scan-row-shop {
+  color: var(--danger);
+}
+
+.scan-row-price.diff-down .scan-row-unit,
+.scan-row-price.diff-down .scan-row-shop {
+  color: var(--good);
+}
+
 .calc-tag {
   margin-left: 4px;
   padding: 0 4px;

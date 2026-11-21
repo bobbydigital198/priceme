@@ -4,7 +4,7 @@ import { MenuButton } from '../components/Menu'
 import { ProductThumb } from '../components/ProductThumb'
 import { CATEGORIES, categorise, type CategoryId } from '../lib/categories'
 import { db, type Product, type Scan } from '../lib/db'
-import { formatPrice, formatScanCount } from '../lib/format'
+import { formatPrice } from '../lib/format'
 import { currencyOf } from '../lib/region'
 import { fetchCategoryTags } from '../lib/openFoodFacts'
 import { rememberedOpen, rememberedView, rememberOpen, rememberScroll, rememberView, takeScroll, type ProductsView } from '../lib/productsMemory'
@@ -192,13 +192,13 @@ function ProductGroup({ name, rows, isOpen: wantsOpen, onToggle, onOpenProduct }
       </button>
       {isOpen && (
         <ul className="category-products">
-          {rows.map(({ product, latest, count }) => (
+          {rows.map(({ product, latest }) => (
             <li key={product.barcode}>
               <button type="button" className="shop-product-row" onClick={() => onOpenProduct(product.barcode)}>
                 <ProductThumb imageUrl={product.imageUrl} name={product.name} size={44} />
                 <span className="shop-product-name">
                   {product.name}
-                  <span className="product-sub small">{[product.brand, formatScanCount(count)].filter(Boolean).join(' · ')}</span>
+                  <span className="product-sub small">{[product.brand, product.quantityText].filter(Boolean).join(' - ')}</span>
                 </span>
                 <span className="history-price">{formatPrice(latest.price, currencyOf(latest))}</span>
               </button>

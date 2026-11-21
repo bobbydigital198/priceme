@@ -6,9 +6,13 @@ import { ProductThumb } from './ProductThumb'
 type Props = { item: RecentScan; onOpen: (barcode: string) => void }
 
 export function ScanRow({ item, onOpen }: Props) {
-  const { scan, product, shop, productScanCount } = item
+  const { scan, product, shop, productScanCount, shopAverage } = item
   const name = product?.name ?? `Unknown product (${scan.barcode})`
   const currency = currencyOf(scan)
+  // Red if this price is above your average for the product at this shop, green if below.
+  const difference = shopAverage === undefined ? 0 : Math.round((scan.price - shopAverage) * 100)
+  const tone = difference > 0 ? ' diff-up' : difference < 0 ? ' diff-down' : ''
+  const toneLabel = difference > 0 ? 'Above your average at this shop' : difference < 0 ? 'Below your average at this shop' : undefined
 
   return (
     <li>
@@ -18,14 +22,14 @@ export function ScanRow({ item, onOpen }: Props) {
         <div className="scan-row-main">
           <div className="scan-row-name">{name}</div>
           {product?.brand && <div className="scan-row-brand">{product.brand}</div>}
+          {product?.quantityText && <div className="scan-row-brand">{product.quantityText}</div>}
           <div className="scan-row-meta">
-            {shop && <span>{formatShop(shop)}</span>}
             <span>{formatScanTime(scan.timestamp)}</span>
+            <span>{formatScanCount(productScanCount)}</span>
           </div>
-          <div className="scan-row-meta">{formatScanCount(productScanCount)}</div>
         </div>
 
-        <div className="scan-row-price">
+        <div className={`scan-row-price${tone}`} title={toneLabel}>
           <div className="scan-row-amount">{formatPrice(scan.price, currency)}</div>
           {scan.unitPrice !== undefined && scan.unitBasis && (
             <div className="scan-row-unit">
@@ -33,6 +37,8 @@ export function ScanRow({ item, onOpen }: Props) {
               {scan.unitPriceSource === 'calculated' && <span className="calc-tag">calc.</span>}
             </div>
           )}
+          {shop && <div className="scan-row-shop">{formatShop(shop)}</div>}
+          {toneLabel && <span className="visually-hidden">{toneLabel}</span>}
         </div>
       </button>
     </li>

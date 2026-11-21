@@ -46,8 +46,6 @@ export function ProductDetail({ barcode, onBack, onEdit }: Props) {
   }
 
   const summary = summariseProduct(scans ?? [])
-  // How the latest price compares with your average for this product.
-  const fromAverage = summary ? priceDifference(summary.latest.price, summary.average) : { euros: 0, percent: 0 }
   const order = shopsInFirstSeenOrder(scans ?? [])
   const colourOf = (shopId?: number) => shopColour(order.indexOf(shopId), dark)
   const series: ChartSeries[] = order.map((shopId) => ({
@@ -68,6 +66,9 @@ export function ProductDetail({ barcode, onBack, onEdit }: Props) {
     const { unitPrice, unitBasis } = computeUnitPrice(average, size)
     return formatUnitPrice(unitPrice, unitBasis, currency)
   }
+  // How the latest price compares with the average at the shop shown in the box above.
+  const fromAverage = summary && shown ? priceDifference(summary.latest.price, shown.average) : { euros: 0, percent: 0 }
+  const shownShop = shown?.shopId === undefined ? 'with no shop recorded' : `at ${shopName(shown.shopId)}`
   const averageAt = (shopId?: number) => (shopId === undefined ? 'Average price with no shop recorded' : `Average price at ${shopName(shopId)}`)
   const newestFirst = [...(scans ?? [])].sort((a, b) => b.timestamp - a.timestamp)
 
@@ -202,8 +203,8 @@ export function ProductDetail({ barcode, onBack, onEdit }: Props) {
               value={fromAverage.euros === 0 ? 'Same' : formatSignedPrice(fromAverage.euros, currency)}
               note={
                 fromAverage.euros === 0
-                  ? 'Latest price is your average across all shops'
-                  : `${fromAverage.percent > 0 ? '+' : ''}${fromAverage.percent}% (latest vs your average across all shops, ${formatPrice(summary.average, currency)})`
+                  ? `Latest price is your average ${shownShop}`
+                  : `${fromAverage.percent > 0 ? '+' : ''}${fromAverage.percent}% (latest vs your average ${shownShop})`
               }
               tone={fromAverage.euros > 0 ? 'up' : fromAverage.euros < 0 ? 'down' : undefined}
             />
